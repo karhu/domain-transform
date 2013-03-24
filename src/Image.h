@@ -1,7 +1,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-
+#include "types.h"
 #include "Exception.h"
 #include "io_png/io_png.h"
 
