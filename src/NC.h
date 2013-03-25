@@ -1,17 +1,17 @@
 #ifndef NC_H
 #define NC_H
 
-#include "Image.h"
+#include "Mat2.h"
 
 namespace NC
 {
 
-Image<float3> diffX(Image<float3> input)
+Mat2<float3> diffX(Mat2<float3> input)
 {
     const uint W = input.width;
     const uint H = input.height;
 
-    Image<float3> output(W,H);
+    Mat2<float3> output(W,H);
 
     for (uint i=0; i<H; i++)
     {
@@ -25,12 +25,12 @@ Image<float3> diffX(Image<float3> input)
     }
 }
 
-Image<float3> diffY(Image<float3> input)
+Mat2<float3> diffY(Mat2<float3> input)
 {
     const uint W = input.width;
     const uint H = input.height;
 
-    Image<float3> output(W,H);
+    Mat2<float3> output(W,H);
 
     for (uint i=0; i<H-1; i++)
     {
@@ -44,34 +44,72 @@ Image<float3> diffY(Image<float3> input)
     }
 }
 
-void filter(Image<float3> img, double sigma_s, double sigma_r, uint nIterations)
+/** In place cumulative sum along width/X/rows **/
+void cumsumX(Mat2<float3> img)
+{
+    for (uint i=0; i<H; i++)
+    {
+        float sum = 0;
+        for (uint j=0; j<W; j++)
+        {
+            uint idx = i*W + j;
+            sum += img.data[idx];
+            img.data[idx] = sum;
+        }
+    }
+}
+
+/** In place cumulative sum along height/Y/cols **/
+void cumsumY(Mat2<float3> img)
+{
+    for (uint j=0; j<W; j++)
+    {
+        float sum = 0;
+        for (uint i=0; i<H; i++)
+        {
+            uint idx = i*W + j;
+            sum += img.data[idx];
+            img.data[idx] = sum;
+        }
+    }
+}
+
+void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
 {
     //Estimate horizontal and vertical partial derivatives using finite differences.
-    Image<float3> dIcdx = diffX(img);
-    Image<float3> dIcdy = diffY(img);
+    Mat2<float3> dIcdx = diffX(img);
+    Mat2<float3> dIcdy = diffY(img);
 
     const uint W = img.width;
     const uint H = img.height;
 
     // Compute the l1-norm distance of neighbor pixels.
-    Image<float> dIdx(W,H);
-    Image<float> dIdy(W,H);
+    Mat2<float> dIdx(W,H);
+    Mat2<float> dIdy(W,H);
     for (uint i=0; i<H; i++)
     {
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
-            dIdx[idx] = abs<float>(dIcdx[idx].r) +
-                        abs<float>(dIcdx[idx].g) +
-                        abs<float>(dIcdx[idx].b);
+            dIdx.data[idx] = abs<float>(dIcdx.data[idx].r) +
+                             abs<float>(dIcdx.data[idx].g) +
+                             abs<float>(dIcdx.data[idx].b);
 
-            dIdy[idx] = abs<float>(dIcdy[idx].r) +
-                        abs<float>(dIcdy[idx].g) +
-                        abs<float>(dIcdy[idx].b);
+            dIdy.data[idx] = abs<float>(dIcdy.data[idx].r) +
+                             abs<float>(dIcdy.data[idx].g) +
+                             abs<float>(dIcdy.data[idx].b);
         }
     }
 
 
+
+    // Compute the derivatives of the horizontal and vertical domain transforms.
+    float s = sigma_s/sigma_r;
+    for (uint i=0; i<H*W; i++)
+    {
+        dIdx.data[i] = 1.0f + s*dIdx.data[i];
+        dIdy.data[i] = 1.0f + s*dIdy.data[i];
+    }
 
     // ...
 
