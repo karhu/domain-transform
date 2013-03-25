@@ -12,24 +12,38 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
+#include <string>
 #include <exception>
 
-class Exception : public std::exception
+class ExceptionBase : public std::exception
 {
 protected:
     std::string _message;
 
 public:
-    Exception(const std::string& message)
+    ExceptionBase(const std::string& message)
         : _message(message)
     {}
 
-    ~Exception() throw(){}
+    ~ExceptionBase() throw(){}
 
     virtual const char* what() const throw()
     {
         return _message.c_str();
     }
+};
+
+
+class Exception : public ExceptionBase
+{
+public:
+    Exception(const std::string& message) : ExceptionBase(message) {}
+};
+
+class TodoException : public ExceptionBase
+{
+public:
+    TodoException(const std::string& message) : ExceptionBase(message) {}
 };
 
 #endif // EXCEPTION_H

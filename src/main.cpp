@@ -33,11 +33,11 @@ int main(int argc, char** argv)
 
 //    createWindow(argc, argv);
 
-    Image img(inputPath);
+    Mat2<float3> img = LoadPNG(inputPath);
 
     cout << "[Dimensions] \t" << img.width << " x " << img.height << endl;
 
-    img.save(outputPath);
+    SavePNG(outputPath,img);
     img.free();
 
     return 0;

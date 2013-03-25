@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <iostream>
 inline void c_free(void* ptr)
 {
     free(ptr);
@@ -17,78 +18,37 @@ typedef unsigned char uint8;
 
 using namespace std;
 
-/** A simple RGB image. **/
-struct Image
+
+struct float3{
+    float r,g,b;
+};
+
+struct uchar3{
+    uchar r,g,b;
+};
+
+template<typename T>
+struct Mat2
 {
     int width, height;
-    uchar* data; // size: width*height*3
+    T* data; // size: width*height
 
-    /** Loads an image from a file. **/
-    Image(const string& path)
-    {
-        size_t nx, ny, nc;
-        uchar* img;
-        uchar *img_r, *img_g, *img_b;
-
-        // read the image info a float array
-        img = io_png_read_uchar_opt(path.c_str(), &nx, &ny, &nc,IO_PNG_OPT_RGB);
-
-        assert(nc == 3); // Number of color components should always be 3.
-
-        width = nx;
-        height = ny;
-        data = new uchar[nx*ny*3];
-
-        // copy data from RRRGGGBBB TO RGBRGBRGB format.
-        img_r = img;                // red channel
-        img_g = img + nx * ny;      // green channel
-        img_b = img + 2 * nx * ny;  // blue channel
-
-        for (ulong i=0; i<nx*ny; i++)
-        {
-            data[3*i] = img_r[i];
-            data[3*i+1] = img_g[i];
-            data[3*i+2] = img_b[i];
-        }
-
-        c_free(img);
-    }
-
-    /** Creates an empty 0 initialized image of given size.  **/
-    Image(uint w, uint h)
+    /** Creates an uninitialized image of given size.  **/
+    Mat2(uint w, uint h)
     {
         width = w;
         height = h;
-        data = new uchar[w*h*3];
-        for (ulong i=0; i<w*h*3;i++)
+        data = new T[w*h];
+
+    }
+
+    /** Sets the all entries to 0. **/
+    void clear()
+    {
+        for (ulong i=0; i<width*height*3;i++)
         {
             data[i] = 0;
         }
-    }
-
-    void save(const string& path)
-    {
-        if (data == 0)
-            throw Exception("No image data to write to file.");
-
-        uchar* tmp = new uchar[width*height*3];
-        uchar *tmp_r, *tmp_g, *tmp_b;
-
-        tmp_r = tmp;                       // red channel
-        tmp_g = tmp + width * height;      // green channel
-        tmp_b = tmp + 2 * width * height;  // blue channel
-
-        for (ulong i=0; i<width*height; i++)
-        {
-            tmp_r[i] = data[3*i];
-            tmp_g[i] = data[3*i+1];
-            tmp_b[i] = data[3*i+2];
-        }
-
-        io_png_write_uchar(path.c_str(), tmp, width, height, 3);
-        cout << "file written: " << path << endl;
-
-        delete tmp;
     }
 
     void free()
@@ -98,5 +58,66 @@ struct Image
         width = height = 0;
     }
 };
+
+
+Mat2<float3> LoadPNG(const std::string& path)
+{
+    size_t nx, ny, nc;
+    float* img;
+    float *img_r, *img_g, *img_b;
+
+    // read the image info a float array
+    img = io_png_read_flt_opt(path.c_str(), &nx, &ny, &nc,IO_PNG_OPT_RGB);
+
+    assert(nc == 3); // Number of color components should always be 3.
+
+    uint width = nx;
+    uint height = ny;
+    Mat2<float3> mat(width,height);
+
+    // copy data from RRRGGGBBB TO RGBRGBRGB format.
+    img_r = img;                // red channel
+    img_g = img + nx * ny;      // green channel
+    img_b = img + 2 * nx * ny;  // blue channel
+
+    float* d = (float*) mat.data;
+    for (ulong i=0; i<nx*ny; i++)
+    {
+        d[3*i] = img_r[i];
+        d[3*i+1] = img_g[i];
+        d[3*i+2] = img_b[i];
+    }
+
+    c_free(img);
+
+    return mat;
+}
+
+void SavePNG(const std::string& path, Mat2<float3> mat)
+{
+    if (mat.width == 0 || mat.height == 0)
+        throw Exception("No image data to write to file.");
+
+    float* tmp = new float[mat.width*mat.height*3];
+    float *tmp_r, *tmp_g, *tmp_b;
+
+    tmp_r = tmp;                               // red channel
+    tmp_g = tmp + mat.width * mat.height;      // green channel
+    tmp_b = tmp + 2 * mat.width * mat.height;  // blue channel
+
+    for (ulong i=0; i<mat.width*mat.height; i++)
+    {
+        tmp_r[i] = mat.data[i].r;
+        tmp_g[i] = mat.data[i].g;
+        tmp_b[i] = mat.data[i].b;
+    }
+
+    io_png_write_flt(path.c_str(), tmp, mat.width, mat.height, 3);
+    cout << "file written: " << path << endl;
+
+    delete tmp;
+}
+
+
 
 #endif // IMAGE_H
