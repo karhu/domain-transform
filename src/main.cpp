@@ -2,6 +2,7 @@
 
 #include "tclap/CmdLine.h"
 #include "Image.h"
+#include "mainwindow.h"
 
 using namespace std;
 
@@ -29,6 +30,8 @@ int main(int argc, char** argv)
 
     cout << "[Input]  \t" << inputPath << endl;
     cout << "[Output] \t" << outputPath << endl;
+
+//    createWindow(argc, argv);
 
     Image img(inputPath);
 
