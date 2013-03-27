@@ -20,7 +20,8 @@ HEADERS += \
     Image.h \
     mainwindow.h \
     NC.h \
-    Exception.h
+    Exception.h \
+    Mat2.h
 
 FORMS += \
     mainwindow.ui
