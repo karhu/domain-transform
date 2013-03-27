@@ -21,7 +21,9 @@ HEADERS += \
     mainwindow.h \
     NC.h \
     Exception.h \
-    Mat2.h
+    Mat2.h \
+    RF.h \
+    common.h
 
 FORMS += \
     mainwindow.ui
