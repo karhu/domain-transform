@@ -73,13 +73,13 @@ void cumsumY(Mat2<float3> img)
 
 Mat2<float3> transposed(Mat2<float3> in)
 {
-    Mat2<float3> out(in.width,in.height);
+    Mat2<float3> out(in.height,in.width);
 
-    for (uint i=0; i<in.width; i++)
+    for (uint i=0; i<in.height; i++)
     {
-        for (uint j=0; j<in.height; j++)
+        for (uint j=0; j<in.width; j++)
         {
-//            out.data[]
+            out.data[j*in.height + i] = in.data[i*in.width+j];
         }
     }
 }

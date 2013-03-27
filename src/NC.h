@@ -44,6 +44,9 @@ void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
         dIdy.data[i] = 1.0f + s*dIdy.data[i];
     }
 
+    cumsumX(dIdx);
+    cumsumY(dIdy);
+
     Mat2<float> dIdyT = transposed(dIdy);
 
     // ...
