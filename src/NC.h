@@ -74,6 +74,19 @@ void cumsumY(Mat2<float3> img)
     }
 }
 
+Mat2<float3> transposed(Mat2<float3> in)
+{
+    Mat2<float3> out(in.width,in.height);
+
+    for (uint i=0; i<in.width; i++)
+    {
+        for (uint j=0; j<in.height; j++)
+        {
+//            out.data[]
+        }
+    }
+}
+
 void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
 {
     //Estimate horizontal and vertical partial derivatives using finite differences.
@@ -110,6 +123,8 @@ void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
         dIdx.data[i] = 1.0f + s*dIdx.data[i];
         dIdy.data[i] = 1.0f + s*dIdy.data[i];
     }
+
+    Mat2<float> dIdyT = transposed(dIdy);
 
     // ...
 
