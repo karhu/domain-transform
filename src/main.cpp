@@ -6,6 +6,8 @@
 
 using namespace std;
 
+#include "NC.h"
+#include "RF.h"
 int main(int argc, char** argv)
 {
     string inputPath, outputPath;

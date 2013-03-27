@@ -1,8 +1,11 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <cmath>
 #include "Mat2.h"
 
+// has an additional column at the end with random data
+inline
 Mat2<float3> diffX(Mat2<float3> input)
 {
     const uint W = input.width;
@@ -22,6 +25,8 @@ Mat2<float3> diffX(Mat2<float3> input)
     }
 }
 
+// has an additional column at the end with random data
+inline
 Mat2<float3> diffY(Mat2<float3> input)
 {
     const uint W = input.width;
@@ -42,8 +47,11 @@ Mat2<float3> diffY(Mat2<float3> input)
 }
 
 /** In place cumulative sum along width/X/rows **/
-void cumsumX(Mat2<float3> img)
+inline
+void cumsumX(Mat2<float> img)
 {
+    uint H = img.height;
+    uint W = img.width;
     for (uint i=0; i<H; i++)
     {
         float sum = 0;
@@ -57,8 +65,11 @@ void cumsumX(Mat2<float3> img)
 }
 
 /** In place cumulative sum along height/Y/cols **/
-void cumsumY(Mat2<float3> img)
+inline
+void cumsumY(Mat2<float> img)
 {
+    uint H = img.height;
+    uint W = img.width;
     for (uint j=0; j<W; j++)
     {
         float sum = 0;
@@ -71,18 +82,43 @@ void cumsumY(Mat2<float3> img)
     }
 }
 
-Mat2<float3> transposed(Mat2<float3> in)
+inline
+Mat2<float> transposed(Mat2<float> in)
 {
-    Mat2<float3> out(in.height,in.width);
-
-    for (uint i=0; i<in.height; i++)
+    Mat2<float> out(in.height,in.width);
+    uint H = in.height;
+    uint W = in.width;
+    for (uint i=0; i<in.width; i++)
     {
-        for (uint j=0; j<in.width; j++)
+        for (uint j=0; j<in.height; j++)
         {
-            out.data[j*in.height + i] = in.data[i*in.width+j];
+            uint idx = i*W + j;
+            uint idxT = j*H + i;
+            out.data[idxT] = in.data[idx];
         }
     }
 }
+
+inline
+Mat2<float3> transposed(Mat2<float3> in)
+{
+    Mat2<float3> out(in.height,in.width);
+    uint H = in.height;
+    uint W = in.width;
+    
+    for (uint i=0; i<in.width; i++)
+    {
+        for (uint j=0; j<in.height; j++)
+        {
+            uint idx = i*W + j;
+            uint idxT = j*H + i;
+            out.data[idxT].r = in.data[idx].r;
+            out.data[idxT].g = in.data[idx].g;
+            out.data[idxT].b = in.data[idx].b;
+        }
+    }
+}
+
 
 
 #endif // COMMON_H
