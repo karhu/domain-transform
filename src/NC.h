@@ -1,8 +1,7 @@
 #ifndef NC_H
 #define NC_H
 
-#include "Mat2.h"
-
+#include "common.h"
 namespace NC
 {
 
@@ -24,13 +23,13 @@ void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
-            dIdx.data[idx] = abs<float>(dIcdx.data[idx].r) +
-                             abs<float>(dIcdx.data[idx].g) +
-                             abs<float>(dIcdx.data[idx].b);
+            dIdx.data[idx] = fabs(dIcdx.data[idx].r) +
+                             fabs(dIcdx.data[idx].g) +
+                             fabs(dIcdx.data[idx].b);
 
-            dIdy.data[idx] = abs<float>(dIcdy.data[idx].r) +
-                             abs<float>(dIcdy.data[idx].g) +
-                             abs<float>(dIcdy.data[idx].b);
+            dIdy.data[idx] = fabs(dIcdy.data[idx].r) +
+                             fabs(dIcdy.data[idx].g) +
+                             fabs(dIcdy.data[idx].b);
         }
     }
 
