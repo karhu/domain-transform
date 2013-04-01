@@ -7,7 +7,7 @@
 
 // has an additional column at the end with random data
 inline
-Mat2<float3> diffX(Mat2<float3> input)
+Mat2<float3> diffX(Mat2<float3>& input)
 {
     const uint W = input.width;
     const uint H = input.height;
@@ -30,7 +30,7 @@ Mat2<float3> diffX(Mat2<float3> input)
 
 // has an additional column at the end with random data
 inline
-Mat2<float3> diffY(Mat2<float3> input)
+Mat2<float3> diffY(Mat2<float3>& input)
 {
     const uint W = input.width;
     const uint H = input.height;
@@ -53,7 +53,7 @@ Mat2<float3> diffY(Mat2<float3> input)
 
 /** In place cumulative sum along width/X/rows **/
 inline
-void cumsumX(Mat2<float> img)
+void cumsumX(Mat2<float>& img)
 {
     uint H = img.height;
     uint W = img.width;
@@ -71,7 +71,7 @@ void cumsumX(Mat2<float> img)
 
 /** In place cumulative sum along height/Y/cols **/
 inline
-void cumsumY(Mat2<float> img)
+void cumsumY(Mat2<float>& img)
 {
     uint H = img.height;
     uint W = img.width;
@@ -87,12 +87,76 @@ void cumsumY(Mat2<float> img)
     }
 }
 
-inline
-Mat2<float> transposed(Mat2<float> in)
+// please recheck this function
+inline void
+transpose(Mat2<float3>& in)
 {
-    Mat2<float> out(in.height,in.width);
     uint H = in.height;
     uint W = in.width;
+
+    float3 *m = in.data;
+    float3 tmp;
+// Code adapted from
+// http://rosettacode.org/wiki/Matrix_transposition#C
+    int start, next, i;
+    for (start = 0; start <= W * H - 1; start++) {
+        next = start;
+        i = 0;
+        do {	i++;
+            next = (next % H) * W + next / H;
+        } while (next > start);
+        if (next < start || i == 1) continue;
+
+        tmp = m[next = start];
+        do {
+            i = (next % H) * W + next / H;
+            m[next] = (i == start) ? tmp : m[i];
+            next = i;
+        } while (next > start);
+    }
+
+    in.height = W;
+    in.width = H;
+}
+
+inline void
+transpose(Mat2<float>& in)
+{
+    uint H = in.height;
+    uint W = in.width;
+
+    float *m = in.data;
+    float tmp;
+// Code adapted from
+// http://rosettacode.org/wiki/Matrix_transposition#C
+    int start, next, i;
+    for (start = 0; start <= W * H - 1; start++) {
+        next = start;
+        i = 0;
+        do {	i++;
+            next = (next % H) * W + next / H;
+        } while (next > start);
+        if (next < start || i == 1) continue;
+
+        tmp = m[next = start];
+        do {
+            i = (next % H) * W + next / H;
+            m[next] = (i == start) ? tmp : m[i];
+            next = i;
+        } while (next > start);
+    }
+
+    in.height = W;
+    in.width = H;
+}
+
+inline Mat2<float>
+transposed(Mat2<float> in)
+{
+    uint H = in.height;
+    uint W = in.width;
+    Mat2<float> out(H,W);
+
     for (uint i=0; i<H; i++)
     {
         for (uint j=0; j<W; j++)
@@ -105,56 +169,16 @@ Mat2<float> transposed(Mat2<float> in)
     return out;
 }
 
-// please recheck this function
-inline
-void transpose(Mat2<float3> in)
+inline Mat2<float3>
+transposed(Mat2<float3> in)
 {
     uint H = in.height;
     uint W = in.width;
-    for (uint i=1; i<in.height; i++) // start with index 1
-    {
-        for (uint j=i; j<in.width; j++)
-        {
-            uint idx = i*W + j;
-            uint idxT = j*H + i;
-            float3 tmp = in.data[idx];
-            in.data[idx] = in.data[idxT];
-            in.data[idxT] = tmp;
-        }
-    }
-    in.height = W;
-    in.width = H;
-}
+    Mat2<float3> out(H,W);
 
-inline
-void transpose(Mat2<float> in)
-{
-    uint H = in.height;
-    uint W = in.width;
-    for (uint i=1; i<in.height; i++) // start with index 1
+    for (uint i=0; i<H; i++)
     {
-        for (uint j=i; j<in.width; j++)
-        {
-            uint idx = i*W + j;
-            uint idxT = j*H + i;
-            float tmp = in.data[idx];
-            in.data[idx] = in.data[idxT];
-            in.data[idxT] = tmp;
-        }
-    }
-    in.height = W;
-    in.width = H;
-}
-
-inline
-Mat2<float3> transposed(Mat2<float3> in)
-{
-    Mat2<float3> out(in.height,in.width);
-    uint H = in.height;
-    uint W = in.width;
-    for (uint i=0; i<in.height; i++)
-    {
-        for (uint j=0; j<in.width; j++)
+        for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
             uint idxT = j*H + i;
