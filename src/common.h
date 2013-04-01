@@ -90,15 +90,15 @@ void cumsumY(Mat2<float> img)
 inline
 Mat2<float> transposed(Mat2<float> in)
 {
-    Mat2<float> out(in.width,in.height);
+    Mat2<float> out(in.height,in.width);
     uint H = in.height;
     uint W = in.width;
-    for (uint i=0; i<in.height; i++)
+    for (uint i=0; i<H; i++)
     {
-        for (uint j=0; j<in.width; j++)
+        for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
-            uint idxT = j*W + i;
+            uint idxT = j*H + i;
             out.data[idxT] = in.data[idx];
         }
     }
@@ -116,7 +116,7 @@ void transpose(Mat2<float3> in)
         for (uint j=i; j<in.width; j++)
         {
             uint idx = i*W + j;
-            uint idxT = j*W + i;
+            uint idxT = j*H + i;
             float3 tmp = in.data[idx];
             in.data[idx] = in.data[idxT];
             in.data[idxT] = tmp;
@@ -136,7 +136,7 @@ void transpose(Mat2<float> in)
         for (uint j=i; j<in.width; j++)
         {
             uint idx = i*W + j;
-            uint idxT = j*W + i;
+            uint idxT = j*H + i;
             float tmp = in.data[idx];
             in.data[idx] = in.data[idxT];
             in.data[idxT] = tmp;
@@ -149,7 +149,7 @@ void transpose(Mat2<float> in)
 inline
 Mat2<float3> transposed(Mat2<float3> in)
 {
-    Mat2<float3> out(in.width,in.height);
+    Mat2<float3> out(in.height,in.width);
     uint H = in.height;
     uint W = in.width;
     for (uint i=0; i<in.height; i++)
@@ -157,7 +157,7 @@ Mat2<float3> transposed(Mat2<float3> in)
         for (uint j=0; j<in.width; j++)
         {
             uint idx = i*W + j;
-            uint idxT = j*W + i;
+            uint idxT = j*H + i;
             out.data[idxT].r = in.data[idx].r;
             out.data[idxT].g = in.data[idx].g;
             out.data[idxT].b = in.data[idx].b;
