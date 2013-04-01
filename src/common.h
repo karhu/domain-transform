@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <cmath>
+#include "types.h"
 #include "Mat2.h"
 
 // has an additional column at the end with random data
@@ -23,6 +24,8 @@ Mat2<float3> diffX(Mat2<float3> input)
             output.data[idx].b = input.data[idx+1].b - input.data[idx].b;
         }
     }
+
+    return output;
 }
 
 // has an additional column at the end with random data
@@ -44,6 +47,8 @@ Mat2<float3> diffY(Mat2<float3> input)
             output.data[idx].b = input.data[idx+W].b - input.data[idx].b;
         }
     }
+
+    return output;
 }
 
 /** In place cumulative sum along width/X/rows **/
@@ -88,15 +93,16 @@ Mat2<float> transposed(Mat2<float> in)
     Mat2<float> out(in.width,in.height);
     uint H = in.height;
     uint W = in.width;
-    for (uint i=0; i<in.width; i++)
+    for (uint i=0; i<in.height; i++)
     {
-        for (uint j=0; j<in.height; j++)
+        for (uint j=0; j<in.width; j++)
         {
             uint idx = i*W + j;
             uint idxT = j*W + i;
             out.data[idxT] = in.data[idx];
         }
     }
+    return out;
 }
 
 // please recheck this function
@@ -105,9 +111,9 @@ void transpose(Mat2<float3> in)
 {
     uint H = in.height;
     uint W = in.width;
-    for (uint i=1; i<in.width; i++) // start with index 1
+    for (uint i=1; i<in.height; i++) // start with index 1
     {
-        for (uint j=i; j<in.height; j++)
+        for (uint j=i; j<in.width; j++)
         {
             uint idx = i*W + j;
             uint idxT = j*W + i;
@@ -125,13 +131,13 @@ void transpose(Mat2<float> in)
 {
     uint H = in.height;
     uint W = in.width;
-    for (uint i=1; i<in.width; i++) // start with index 1
+    for (uint i=1; i<in.height; i++) // start with index 1
     {
-        for (uint j=i; j<in.height; j++)
+        for (uint j=i; j<in.width; j++)
         {
             uint idx = i*W + j;
             uint idxT = j*W + i;
-            float3 tmp = in.data[idx];
+            float tmp = in.data[idx];
             in.data[idx] = in.data[idxT];
             in.data[idxT] = tmp;
         }
@@ -146,9 +152,9 @@ Mat2<float3> transposed(Mat2<float3> in)
     Mat2<float3> out(in.width,in.height);
     uint H = in.height;
     uint W = in.width;
-    for (uint i=0; i<in.width; i++)
+    for (uint i=0; i<in.height; i++)
     {
-        for (uint j=0; j<in.height; j++)
+        for (uint j=0; j<in.width; j++)
         {
             uint idx = i*W + j;
             uint idxT = j*W + i;
@@ -157,6 +163,7 @@ Mat2<float3> transposed(Mat2<float3> in)
             out.data[idxT].b = in.data[idx].b;
         }
     }
+    return out;
 }
 
 
