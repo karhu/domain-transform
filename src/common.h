@@ -116,6 +116,28 @@ void transpose(Mat2<float3> in)
             in.data[idxT] = tmp;
         }
     }
+    in.height = W;
+    in.width = H;
+}
+
+inline
+void transpose(Mat2<float> in)
+{
+    uint H = in.height;
+    uint W = in.width;
+    for (uint i=1; i<in.width; i++) // start with index 1
+    {
+        for (uint j=i; j<in.height; j++)
+        {
+            uint idx = i*W + j;
+            uint idxT = j*W + i;
+            float3 tmp = in.data[idx];
+            in.data[idx] = in.data[idxT];
+            in.data[idxT] = tmp;
+        }
+    }
+    in.height = W;
+    in.width = H;
 }
 
 inline
