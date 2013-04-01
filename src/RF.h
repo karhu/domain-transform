@@ -5,7 +5,7 @@
 
 namespace RF {
 
-void recursiveFilter(Mat2<float3> F, Mat2<float> dHdx, float sigma)
+void recursiveFilter(Mat2<float3>& F, Mat2<float>& dHdx, float sigma)
 {
     float a = exp(-sqrt(2.0)/sigma);
     uint H = F.height;
@@ -67,7 +67,7 @@ void recursiveFilter(Mat2<float3> F, Mat2<float> dHdx, float sigma)
 }
 
 
-void filter(Mat2<float3> F, float sigma_s, float sigma_r, uint nIterations)
+void filter(Mat2<float3>& F, float sigma_s, float sigma_r, uint nIterations)
 {
     //Estimate horizontal and vertical partial derivatives using finite differences.
     Mat2<float3> dIcdx = diffX(F);
@@ -79,45 +79,65 @@ void filter(Mat2<float3> F, float sigma_s, float sigma_r, uint nIterations)
     // Compute the l1-norm distance of neighbor pixels.
     Mat2<float> dIdx(W,H);
     Mat2<float> dIdy(W,H);
+
+    //    % Compute the l1-norm distance of neighbor pixels.
+//     for c = 1:num_joint_channels
+//         dIdx(:,2:end) = dIdx(:,2:end) + abs( dIcdx(:,:,c) );
+//     end
     for (uint i=0; i<H; i++)
+    {
+        dIdx.data[i*W] = 0.0;
+        for (uint j=1; j<W; j++)
+        {
+            uint idx = i*W + j;
+            dIdx.data[idx] = fabs(dIcdx.data[idx-1].r) +
+                             fabs(dIcdx.data[idx-1].g) +
+                             fabs(dIcdx.data[idx-1].b);
+        }
+    }
+
+//    % Compute the l1-norm distance of neighbor pixels.
+//     for c = 1:num_joint_channels
+//         dIdy(2:end,:) = dIdy(2:end,:) + abs( dIcdy(:,:,c) );
+//     end
+    for (uint j=0; j<W; j++)
+    {
+        dIdy.data[j] = 0.0;
+    }
+    for (uint i=1; i<H; i++)
     {
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
-            dIdx.data[idx] = fabs(dIcdx.data[idx].r) +
-                             fabs(dIcdx.data[idx].g) +
-                             fabs(dIcdx.data[idx].b);
-
-            dIdy.data[idx] = fabs(dIcdy.data[idx].r) +
-                             fabs(dIcdy.data[idx].g) +
-                             fabs(dIcdy.data[idx].b);
+            uint idxT = (i-1)*W+j;
+            dIdy.data[idx] = fabs(dIcdy.data[idxT].r) +
+                             fabs(dIcdy.data[idxT].g) +
+                             fabs(dIcdy.data[idxT].b);
         }
     }
 
+
+
+//    % Compute the derivatives of the horizontal and vertical domain transforms.
+//      dHdx = (1 + sigma_s/sigma_r * dIdx);
+//      dVdy = (1 + sigma_s/sigma_r * dIdy);
 
     Mat2<float> dHdx(W,H);
     Mat2<float> dVdy(W,H);
+    float s = sigma_s/sigma_r;
+
     for (uint i=0; i<H; i++)
     {
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
-            dHdx.data[idx] = 1.0+sigma_s/sigma_r*dIdx.data[idx];
-            dVdy.data[idx] = 1.0+sigma_s/sigma_r*dIdy.data[idx];
+            dHdx.data[idx] = 1.0+s*dIdx.data[idx];
+            dVdy.data[idx] = 1.0+s*dIdy.data[idx];
         }
     }
 
-
-    // Compute the derivatives of the horizontal and vertical domain transforms.
-    float s = sigma_s/sigma_r;
-    for (uint i=0; i<H*W; i++)
-    {
-        dIdx.data[i] = 1.0f + s*dIdx.data[i];
-        dIdy.data[i] = 1.0f + s*dIdy.data[i];
-    }
-
 //    Mat2<float> dIdyT = transposed(dIdy);
-    transpose(dIdy);
+    transpose(dVdy);
 
     // Perform the filtering
     uint n = nIterations;
