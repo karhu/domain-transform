@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
     Mat2<float3> img = LoadPNG(inputPath);
 
-    RF::filter(img, 40, 0.77, 10);
+    RF::filter(img, 40, 0.77, 3);
 
     cout << "[Dimensions] \t" << img.width << " x " << img.height << endl;
 
