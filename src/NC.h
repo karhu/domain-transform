@@ -5,6 +5,38 @@
 namespace NC
 {
 
+void TransformedDomainBoxFilter(Mat2<float3>& img, const Mat2<float>& ct, float boxR)
+{
+
+//    TransformedDomainBoxFilter_Horizontal(I, xform_domain_position, box_radius)
+
+//        [h w num_channels] = size(I);
+
+//        % Compute the lower and upper limits of the box kernel in the transformed domain.
+//        l_pos = xform_domain_position - box_radius;
+//        u_pos = xform_domain_position + box_radius;
+    for (uint i=0; i<H; i++)
+    {
+        for (uint j=0; j<W; j++)
+        {
+            uint idx = i*W + j;
+
+        }
+    }
+
+//        % Find the indices of the pixels associated with the lower and upper limits
+//        % of the box kernel.
+//        %
+//        % This loop is much faster in a compiled language.  If you are using a
+//        % MATLAB version which supports the 'parallel for' construct, you can
+//        % improve performance by replacing the following 'for' by a 'parfor'.
+
+//        l_idx = zeros(size(xform_domain_position));
+//        u_idx = zeros(size(xform_domain_position));
+
+
+
+}
 
 void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
 {
@@ -54,16 +86,16 @@ void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
     for(uint i=0; i<nIterations; i++)
     {
         // Compute the sigma value for this iteration
-        float sigmaHi = sigma_s * sqrt(3) * 2^(nIterations - (i+1)) / sqrt(4^nIterations -1);
+        float sigmaHi = sigma_s * sqrt(3) * pow(2.0,(nIterations - (i+1))) / sqrt(4^nIterations -1);
 
         // Compute the radius of the box filter with the desired variance.
         float boxR = sqrt(3) * sigmaHi;
 
-//        F = TransformedDomainBoxFilter_Horizontal(F, ct_H, box_radius);
-//        F = image_transpose(F);
+        F = TransformedDomainBoxFilter(img, dIdx, boxR);
+        transpose(img);
 
-//        F = TransformedDomainBoxFilter_Horizontal(F, ct_V, box_radius);
-//        F = image_transpose(F);
+        F = TransformedDomainBoxFilter(img, dIdy, boxR);
+        transpose(img);
     }
 
 
@@ -74,6 +106,8 @@ void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
     dIdx.free();
     dIdy.free();
 }
+
+
 
 };
 

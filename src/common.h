@@ -191,7 +191,7 @@ transposed(Mat2<float3> in)
 }
 
 inline
-void copy(Mat2<float3> source, Mat2<float3> target)
+void copy(const Mat2<float3>& source, Mat2<float3>& target)
 {
     const uint H = source.height;
     const uint W = source.width;
@@ -199,13 +199,9 @@ void copy(Mat2<float3> source, Mat2<float3> target)
     assert(source.height == target.height);
     assert(source.width == target.width);
 
-    for (uint i=0; i<W; i++)
+    for (uint i=0; i<W*H; i++)
     {
-        for (uint j=0; j<H; j++)
-        {
-            uint idx = i*W + j;
-            target.data[idx] = source.data[idx];
-        }
+        target.data[i] = source.data[i];
     }
 }
 
