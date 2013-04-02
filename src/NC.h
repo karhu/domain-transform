@@ -48,8 +48,27 @@ void filter(Mat2<float3> img, float sigma_s, float sigma_r, uint nIterations)
 
     Mat2<float> dIdyT = transposed(dIdy);
 
-    // ...
+    Mat2<float3> outImg(img.width,img.height);
+    copy(img,outImg);
 
+    for(uint i=0; i<nIterations; i++)
+    {
+        // Compute the sigma value for this iteration
+        float sigmaHi = sigma_s * sqrt(3) * 2^(nIterations - (i+1)) / sqrt(4^nIterations -1);
+
+        // Compute the radius of the box filter with the desired variance.
+        float boxR = sqrt(3) * sigmaHi;
+
+//        F = TransformedDomainBoxFilter_Horizontal(F, ct_H, box_radius);
+//        F = image_transpose(F);
+
+//        F = TransformedDomainBoxFilter_Horizontal(F, ct_V, box_radius);
+//        F = image_transpose(F);
+    }
+
+
+    // cleanup
+    dIdyT.free();
     dIcdx.free();
     dIcdy.free();
     dIdx.free();

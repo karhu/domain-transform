@@ -4,7 +4,7 @@
 #include <cmath>
 #include "Mat2.h"
 
-// has an additional column at the end with random data
+/** has an additional column at the end with random data **/
 inline
 Mat2<float3> diffX(Mat2<float3> input)
 {
@@ -23,9 +23,10 @@ Mat2<float3> diffX(Mat2<float3> input)
             output.data[idx].b = input.data[idx+1].b - input.data[idx].b;
         }
     }
+    return output;
 }
 
-// has an additional column at the end with random data
+/** has an additional row at the end with random data **/
 inline
 Mat2<float3> diffY(Mat2<float3> input)
 {
@@ -44,6 +45,7 @@ Mat2<float3> diffY(Mat2<float3> input)
             output.data[idx].b = input.data[idx+W].b - input.data[idx].b;
         }
     }
+    return output;
 }
 
 /** In place cumulative sum along width/X/rows **/
@@ -88,9 +90,9 @@ Mat2<float> transposed(Mat2<float> in)
     Mat2<float> out(in.height,in.width);
     uint H = in.height;
     uint W = in.width;
-    for (uint i=0; i<in.width; i++)
+    for (uint i=0; i<H; i++)
     {
-        for (uint j=0; j<in.height; j++)
+        for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
             uint idxT = j*H + i;
@@ -106,15 +108,34 @@ Mat2<float3> transposed(Mat2<float3> in)
     uint H = in.height;
     uint W = in.width;
     
-    for (uint i=0; i<in.width; i++)
+    for (uint i=0; i<H; i++)
     {
-        for (uint j=0; j<in.height; j++)
+        for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
             uint idxT = j*H + i;
             out.data[idxT].r = in.data[idx].r;
             out.data[idxT].g = in.data[idx].g;
             out.data[idxT].b = in.data[idx].b;
+        }
+    }
+}
+
+inline
+void copy(Mat2<float3> source, Mat2<float3> target)
+{
+    const uint H = source.height;
+    const uint W = source.width;
+
+    assert(source.height == target.height);
+    assert(source.width == target.width);
+
+    for (uint i=0; i<W; i++)
+    {
+        for (uint j=0; j<H; j++)
+        {
+            uint idx = i*W + j;
+            target.data[idx] = source.data[idx];
         }
     }
 }
