@@ -13,7 +13,7 @@ struct uchar3{
 template<typename T>
 struct Mat2
 {
-    int width, height;
+    uint width, height;
     T* data; // size: width*height
 
     /** Creates an uninitialized image of given size.  **/
