@@ -75,7 +75,7 @@ void SavePNG(const std::string& path, Mat2<float3> mat)
     }
 
     io_png_write_flt(path.c_str(), tmp, mat.width, mat.height, 3);
-    cout << "file written: " << path << endl;
+//    cout << "file written: " << path << endl;
 
     delete tmp;
 }
