@@ -3,6 +3,8 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG += qt
 
+QMAKE_CXXFLAGS_DEBUG -= -O2
+QMAKE_CXXFLAGS_DEBUG += -O0
 
 #QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.7.sdk
 
