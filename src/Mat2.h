@@ -36,7 +36,7 @@ struct Mat2
 
     void free()
     {
-        delete data;
+        delete[] data;
         data = 0;
         width = height = 0;
     }

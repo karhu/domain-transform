@@ -64,6 +64,7 @@ void recursiveFilter(Mat2<float3>& F, Mat2<float>& dHdx, float sigma)
     }
 
 //    delete V;
+    V.free();
 }
 
 
@@ -157,6 +158,10 @@ void filter(Mat2<float3>& F, float sigma_s, float sigma_r, uint nIterations)
     dIcdy.free();
     dIdx.free();
     dIdy.free();
+
+    dHdx.free();
+    dVdy.free();
+
 }
 
 };

@@ -99,7 +99,7 @@ void BoxFilterBounds(const Mat2<float>& ct, float boxR, Mat2<int>& outLowerIdx, 
             {
                 posL++;
             }
-            while (ct.data[i*W+posR] < dtR && posR < W)  // attention, allows for index = W
+            while (posR < W && ct.data[i*W+posR] < dtR )  // attention, allows for index = W
             {
                 posR++;
             }
