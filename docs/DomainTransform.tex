@@ -1,0 +1,44 @@
+\documentclass[11pt,a4paper]{article}
+\title{How To Write Fast Numerical Code\\ Course Project}
+\author{Julia Pe\v{c}erska, student number 12-947-396 \\ Adrian Blumer, student number xx-xxx-xxx \\ Pascal Sp\"{o}rri, student number xx-xxx-xxx}
+\date{10.04.2013}
+\usepackage[compact,explicit]{titlesec}
+\usepackage{graphicx}
+\usepackage[normalem]{ulem}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{multirow}
+
+\newcommand{\todo}[1]{\vskip 5mm\noindent{\bf TODO}: {\it #1}}
+
+\begin{document}
+%\titleformat{\section}{\large\bfseries}%{}{0pt}%{\thesection}%{Exercise \thesection \}
+\maketitle
+\section{Cost analysis}
+
+In the Table~\ref{tab:cost_an} below are included all of the operations used in the source code for filtering methods. The counting was done in the source code, no instrumentation used.
+
+The following variables are used in Table~\ref{tab:cost_an}: $W$ - width of the processed image, $H$ - height of the processed image, $N$ - number of filtering iterations.
+
+
+\begin{table}[h]
+\label{tab:cost_an}
+\centering
+\begin{tabular}{| l | l | l |} \hline 
+Operation & Recursive filtering & Normalized convolution \\ \hline
+add & $(6 + 12 N) W H$ & $(9 + 2 N) W H$ \\ \hline
+subtract & $(6 + 12 N) W H$ & $(6 + 4 N) W H$ \\ \hline
+multiply & $(2 + 12 N) W H + 2 N$ & $W H + 3 N$ \\ \hline
+divide & $3 N + 1$ & $6 N + 1$ \\ \hline
+fabs & $6 W H$ & $6 W H$ \\ \hline
+sqrt & $4 N$ & $3 N$ \\ \hline
+powf & $2 N W H + 2 N$ & $2 N$ \\ \hline
+exp & $2 N$ & $0$ \\ \hline
+\end{tabular}
+\caption{Floating point operations performed in the code}
+\end{table}
+
+\end{document}
