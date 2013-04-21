@@ -31,11 +31,13 @@ reference_binary = test_binary
 
 def main():
     image_dir = default_image_dir
-    files = [f for f in os.listdir(image_dir) if os.path.isfile(os.path.join(image_dir, f)) and f.endswith(".png")]
+    files = [image_dir+"/"+f for f in os.listdir(image_dir) if os.path.isfile(os.path.join(image_dir, f)) and f.endswith(".png")]
     for method, arguments in test_arguments.iteritems():
-        for arg in arguments:
+        for args in arguments:
+            # Prepend a "-" for every key in the arguments dict and then flatten the list
+            command_arguments = [i for tuple in args.items() for i in ("-"+str(tuple[0]),str(tuple[1]))]
             for f in files:
-                tester.run_test(test_binary, reference_binary, method, arg, f)
+                tester.run_test(test_binary, reference_binary, method, command_arguments, f)
 
 if __name__ == "__main__":
     main()
