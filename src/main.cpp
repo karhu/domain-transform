@@ -3,6 +3,7 @@
 #include "tclap/CmdLine.h"
 #include "Image.h"
 #include "mainwindow.h"
+#include "rdtsc.h"
 
 using namespace std;
 
@@ -28,6 +29,10 @@ int main(int argc, char** argv)
     uint nIterations;
     float sigmaS;
     float sigmaR;
+
+    bool benchmark;
+    bool benchmarkWarmUp;
+    uint benchmarkIterations;
 
     // Read Command Line Arguments /////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////
@@ -55,6 +60,12 @@ int main(int argc, char** argv)
         TCLAP::ValueArg<float> sigmaRArg("r","rSigma","Filter range standard deviation.",false,0.5f,"float");
         cmd.add(sigmaRArg);
 
+        TCLAP::SwitchArg benchmarkSwitch("b","benchmark","Benchmark application. No ouptut will be saved.", cmd, false);
+        TCLAP::SwitchArg benchmarkWarmupSwitch("w","benchmarkwarmup","Warmup before benchmarking application.", cmd, false);
+
+        TCLAP::ValueArg<int> benchmarkIterationsArg("t", "tTimes", "Number of executions to benchmark.", false, 1, "integer");
+        cmd.add(benchmarkIterationsArg);
+
         cmd.parse( argc, argv );
         inputPath = inputArg.getValue();
         outputPath = outputArg.getValue();
@@ -63,6 +74,9 @@ int main(int argc, char** argv)
         sigmaS = sigmaSArg.getValue();
         sigmaR = sigmaRArg.getValue();
 
+        benchmark = benchmarkSwitch.getValue();
+        benchmarkIterations = benchmarkIterationsArg.getValue();
+        benchmarkWarmUp = benchmarkWarmupSwitch.getValue();
 
         if (methodStringShort == "nc")
         {
@@ -80,26 +94,96 @@ int main(int argc, char** argv)
         std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
     }
 
-    cout << "[Input]           " << inputPath << endl;
-    cout << "[Output]          " << outputPath << endl;
-    cout << "[Method]          " << methodString << endl;
-    cout << "[Iterations]      " << nIterations << endl;
-    cout << "[Spatial Sigma]   " << sigmaS << endl;
-    cout << "[Range Sigma]     " << sigmaR << endl;
-
-//    createWindow(argc, argv);
+    // We parse the benchmark code
+    if (!benchmark) {
+        cout << "[Input]           " << inputPath << endl;
+        cout << "[Output]          " << outputPath << endl;
+        cout << "[Method]          " << methodString << endl;
+        cout << "[Iterations]      " << nIterations << endl;
+        cout << "[Spatial Sigma]   " << sigmaS << endl;
+        cout << "[Range Sigma]     " << sigmaR << endl;
+    }
 
     Mat2<float3> img = LoadPNG(inputPath);
 
-    cout << "[Dimensions]      " << img.width << " x " << img.height << endl;
+    if (!benchmark)
+    {
+        //    createWindow(argc, argv);
+        cout << "[Dimensions]      " << img.width << " x " << img.height << endl;
 
-    if (method == RF)
-        RF::filter(img, sigmaS, sigmaR, nIterations);
-    else if (method == NC)
-        NC::filter(img, sigmaS, sigmaR, nIterations);
+        if (method == RF)
+            RF::filter(img, sigmaS, sigmaR, nIterations);
+        else if (method == NC)
+            NC::filter(img, sigmaS, sigmaR, nIterations);
 
-    SavePNG(outputPath,img);
-    img.free();
+        SavePNG(outputPath,img);
+        img.free();
+    }
+
+    // Benchmarking
+    tsc_counter start, end;
+    double sumX;
+    double sumY;
+    double sumZ;
+    CPUID(); RDTSC(start); RDTSC(end);
+    CPUID(); RDTSC(start); RDTSC(end);
+    CPUID(); RDTSC(start); RDTSC(end);
+
+    if (method==RF)
+    {
+        if (benchmarkWarmUp)
+        {
+            RF::filter(img, sigmaS, sigmaR, nIterations);
+        }
+        CPUID(); RDTSC(start);
+        for (int i=0; i<benchmarkIterations; i++)
+        {
+            RF::filter(img, sigmaS, sigmaR, nIterations);
+        }
+        RDTSC(end); CPUID();
+    } else if (method == NC)
+    {
+        if (benchmarkWarmUp)
+        {
+            NC::filter(img, sigmaS, sigmaR, nIterations);
+        }
+        CPUID(); RDTSC(start);
+        for (int i=0; i<benchmarkIterations; i++)
+        {
+            NC::filter(img, sigmaS, sigmaR, nIterations);
+        }
+        RDTSC(end); CPUID();
+    }
+    uint width = img.width;
+    for (uint x=0; x<width; x++) {
+        for (uint y=0; y<img.height; y++)
+        {
+            sumX += img.data[y*width+x].r;
+            sumY += img.data[y*width+x].g;
+            sumZ += img.data[y*width+x].b;
+        }
+    }
+    double total_cycles = ((double)COUNTER_DIFF(end, start));
+    double cycles = total_cycles / ((double) benchmarkIterations);
+
+    // we emit a python hash to allow for easy parsing
+    // import ast
+    // o = subprocess.check_output(["./"+command_name])
+    // result = ast.literal_eval(o)
+
+    cout << "{'method': '" << methodStringShort << "'";
+    cout << ", 'description': '" << methodString << "'";
+    cout << ", 'input': '" << inputPath << "'";
+    cout << ", 'iterations':  " << nIterations;
+    cout << ", 'sigma_s':  " << sigmaS;
+    cout << ", 'sigma_r': " << sigmaR;
+    cout << ", 'cycles': " << cycles;
+    cout << ", 'total_cycles': " << total_cycles;
+    cout << ", 'benchmark_iterations': " << benchmarkIterations;
+    cout << ", 'benchmark_warmup': " << benchmarkWarmUp;
+    cout << ", 'sum': [" << sumX << ", " << sumY << ", " << sumZ << "]";
+    cout << "}" << endl;
+//    std::cout
 
     return 0;
 }

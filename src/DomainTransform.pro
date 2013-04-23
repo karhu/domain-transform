@@ -25,7 +25,8 @@ HEADERS += \
     Exception.h \
     Mat2.h \
     RF.h \
-    common.h
+    common.h\
+    rdtsc.h
 
 FORMS += \
     mainwindow.ui
