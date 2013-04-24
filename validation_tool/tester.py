@@ -23,6 +23,8 @@ def validate(ref_filename, test_filename):
     px_ref_im = ref_im.load()
     px_test_im = test_im.load()
     errorcounter = 0
+    avg_error = [0,0,0]
+    max_error = [0,0,0]
     for x in range(0,ref_size[0]):
         for y in range(0, ref_size[1]):
             rval = (px_ref_im[x, y])
@@ -31,11 +33,23 @@ def validate(ref_filename, test_filename):
             if (diff[0] >= REQUIRED_ACCURACY or
                         diff[1] >= REQUIRED_ACCURACY or
                         diff[2] >= REQUIRED_ACCURACY):
-                print("({x}, {y}): Difference: {diff}".format(x=x, y=y, diff=diff))
+                #print("({x}, {y}): Difference: {diff}".format(x=x, y=y, diff=diff))
+                avg_error[0] += diff[0]
+                avg_error[1] += diff[1]
+                avg_error[2] += diff[2]
+
+                max_error[0] = max(max_error[0], diff[0])
+                max_error[1] = max(max_error[1], diff[1])
+                max_error[2] = max(max_error[2], diff[2])
                 errorcounter += 1
     if (errorcounter > 0):
-        raise ImagesDontMatchException("Images don't match: Found {n} occurences".format(n=errorcounter))
-
+        #raise ImagesDontMatchException("Images don't match: Found {n} occurences".format(n=errorcounter))
+        print("Observed {n} different values.".format(n=errorcounter))
+        avg_error[0] = avg_error[0]/float(errorcounter)
+        avg_error[1] = avg_error[1]/float(errorcounter)
+        avg_error[2] = avg_error[2]/float(errorcounter)
+        print("Max Error: r={r} g={g} b={b}".format(r=max_error[0], g=max_error[1], b=max_error[2]))
+        print("Avg Error: r={r} g={g} b={b}".format(r=avg_error[0], g=avg_error[1], b=avg_error[2]))
 def run_test(test_binary,  reference_binary, method, arguments, inputfile, test_dir="/tmp/validationtest",
              reference_prefix="ref_", test_prefix="test_", run_reference_program=True):
 

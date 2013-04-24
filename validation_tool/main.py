@@ -10,17 +10,17 @@ default_image_dir = "../testimages"
 
 test_arguments = {
     'nc': [
-        {'n': 1, 's': 40.0, 'r': 0.5},
-        {'n': 2, 's': 40.0, 'r': 0.5},
-        {'n': 3, 's': 40.0, 'r': 0.5},
-        {'n': 4, 's': 40.0, 'r': 0.5}
+        {'n': 2, 's': 20.0, 'r': 0.3},
+        {'n': 2, 's': 20.0, 'r': 0.8},
+        {'n': 2, 's': 100.0, 'r': 0.8},
+        {'n': 2, 's': 100.0, 'r': 1.4},
     ],
-    'rf': [
-        {'n': 1, 's': 40.0, 'r': 0.5},
-        {'n': 2, 's': 40.0, 'r': 0.5},
-        {'n': 3, 's': 40.0, 'r': 0.5},
-        {'n': 4, 's': 40.0, 'r': 0.5}
-    ]
+    # 'rf': [
+    #     {'n': 1, 's': 20.0, 'r': 0.3},
+    #     {'n': 2, 's': 20.0, 'r': 0.8},
+    #     {'n': 3, 's': 100.0, 'r': 0.8},
+    #     {'n': 4, 's': 100.0, 'r': 1.4}
+    # ]
 }
 
 reference_argument = 'ref'
@@ -37,7 +37,7 @@ def main():
             # Prepend a "-" for every key in the arguments dict and then flatten the list
             command_arguments = [i for tuple in args.items() for i in ("-"+str(tuple[0]),str(tuple[1]))]
             for f in files:
-                tester.run_test(test_binary, reference_binary, method, command_arguments, f)
+                tester.run_test(test_binary, reference_binary, method, command_arguments, f, run_reference_program=True)
 
 if __name__ == "__main__":
     main()
