@@ -118,6 +118,7 @@ int main(int argc, char** argv)
 
         SavePNG(outputPath,img);
         img.free();
+        return 0;
     }
 
     // Benchmarking
