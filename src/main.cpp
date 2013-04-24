@@ -130,30 +130,40 @@ int main(int argc, char** argv)
     CPUID(); RDTSC(start); RDTSC(end);
     CPUID(); RDTSC(start); RDTSC(end);
 
+    Mat2<float3> tmpImg(img.width,img.height);
+    double total_cycles = 0;
+
+
     if (method==RF)
     {
         if (benchmarkWarmUp)
         {
             RF::filter(img, sigmaS, sigmaR, nIterations);
         }
-        CPUID(); RDTSC(start);
+
         for (int i=0; i<benchmarkIterations; i++)
         {
-            RF::filter(img, sigmaS, sigmaR, nIterations);
+            copy(img,tmpImg);
+            CPUID(); RDTSC(start);
+            RF::filter(tmpImg, sigmaS, sigmaR, nIterations);
+            RDTSC(end); CPUID();
+            total_cycles += ((double)COUNTER_DIFF(end, start));
         }
-        RDTSC(end); CPUID();
+
     } else if (method == NC)
     {
         if (benchmarkWarmUp)
         {
             NC::filter(img, sigmaS, sigmaR, nIterations);
         }
-        CPUID(); RDTSC(start);
         for (int i=0; i<benchmarkIterations; i++)
         {
-            NC::filter(img, sigmaS, sigmaR, nIterations);
+            copy(img,tmpImg);
+            CPUID(); RDTSC(start);
+            NC::filter(tmpImg, sigmaS, sigmaR, nIterations);
+            RDTSC(end); CPUID();
+            total_cycles += ((double)COUNTER_DIFF(end, start));
         }
-        RDTSC(end); CPUID();
     }
     uint width = img.width;
     for (uint x=0; x<width; x++) {
@@ -164,7 +174,7 @@ int main(int argc, char** argv)
             sumZ += img.data[y*width+x].b;
         }
     }
-    double total_cycles = ((double)COUNTER_DIFF(end, start));
+
     double cycles = total_cycles / ((double) benchmarkIterations);
 
     // we emit a python hash to allow for easy parsing
@@ -186,6 +196,8 @@ int main(int argc, char** argv)
     cout << "}" << endl;
 //    std::cout
 
+    img.free();
+    tmpImg.free();
     return 0;
 }
 

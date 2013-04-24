@@ -1,12 +1,16 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+//#define DO_INLINE
+
 #include <cmath>
 #include "types.h"
 #include "Mat2.h"
 
 /** has an additional column at the end with random data **/
+#ifdef DO_INLINE
 inline
+#endif
 Mat2<float3> diffX(Mat2<float3>& input)
 {
     const uint W = input.width;
@@ -29,7 +33,9 @@ Mat2<float3> diffX(Mat2<float3>& input)
 }
 
 /** has an additional row at the end with random data **/
+#ifdef DO_INLINE
 inline
+#endif
 Mat2<float3> diffY(Mat2<float3>& input)
 {
     const uint W = input.width;
@@ -52,7 +58,9 @@ Mat2<float3> diffY(Mat2<float3>& input)
 }
 
 /** In place cumulative sum along width/X/rows **/
+#ifdef DO_INLINE
 inline
+#endif
 void cumsumX(Mat2<float>& img)
 {
     uint H = img.height;
@@ -70,7 +78,9 @@ void cumsumX(Mat2<float>& img)
 }
 
 /** In place cumulative sum along height/Y/cols **/
+#ifdef DO_INLINE
 inline
+#endif
 void cumsumY(Mat2<float>& img)
 {
     uint H = img.height;
@@ -88,8 +98,10 @@ void cumsumY(Mat2<float>& img)
 }
 
 // please recheck this function
-inline void
-transpose(Mat2<float3>& in)
+#ifdef DO_INLINE
+inline
+#endif
+void transpose(Mat2<float3>& in)
 {
     uint H = in.height;
     uint W = in.width;
@@ -119,8 +131,10 @@ transpose(Mat2<float3>& in)
     in.width = H;
 }
 
-inline void
-transpose(Mat2<float>& in)
+#ifdef DO_INLINE
+inline
+#endif
+void transpose(Mat2<float>& in)
 {
     uint H = in.height;
     uint W = in.width;
@@ -150,8 +164,10 @@ transpose(Mat2<float>& in)
     in.width = H;
 }
 
-inline Mat2<float>
-transposed(Mat2<float> in)
+#ifdef DO_INLINE
+inline
+#endif
+Mat2<float> transposed(Mat2<float> in)
 {
     uint H = in.height;
     uint W = in.width;
@@ -169,8 +185,10 @@ transposed(Mat2<float> in)
     return out;
 }
 
-inline Mat2<float3>
-transposed(Mat2<float3> in)
+#ifdef DO_INLINE
+inline
+#endif
+Mat2<float3> transposed(Mat2<float3> in)
 {
     uint H = in.height;
     uint W = in.width;
@@ -190,7 +208,9 @@ transposed(Mat2<float3> in)
     return out;
 }
 
+#ifdef DO_INLINE
 inline
+#endif
 void copy(const Mat2<float3>& source, Mat2<float3>& target)
 {
     const uint H = source.height;
