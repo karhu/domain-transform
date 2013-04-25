@@ -1,16 +1,8 @@
-# Test Tool for Domain Transform Project
+# Performance Tool for Domain Transform Project
 # ======================================
-#
-#
-#
-# Needs PIL (execute pip install PIL as root)
-import socket
-import os
-import ast
-import sys
-import git
+
 import benchmark
-import compile
+import pickle
 IMAGE_DIR = "testimages"
 
 #TESTIMAGES = ['kyoto', 'bhudda']
@@ -48,6 +40,10 @@ def main():
                             images=images,
                             qmake_file=qmake_file, binary=binary)
     print r
+
+    from datetime import datetime
+    f = open("run_"+benchmark.computer_name()+"_"+datetime.now().strftime('%y_%m_%d__%H_%M')+'.pickle', 'wb')
+    pickle.dump(r, f)
 
 if __name__ == "__main__":
     main()
