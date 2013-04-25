@@ -25,3 +25,7 @@ def clean(directory, git_command=GIT_COMMAND):
 def current_branch_name(directory, git_command=GIT_COMMAND):
     o = subprocess.check_output([git_command, "rev-parse", "--abbrev-ref", "HEAD"])
     return o.rstrip('\n')
+
+def current_revision(directory, git_command=GIT_COMMAND):
+    o = subprocess.check_output([git_command, "rev-parse", "HEAD"])
+    return o.rstrip('\n')
