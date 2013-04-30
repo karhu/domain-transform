@@ -29,3 +29,12 @@ def benchmark(git_repo, src_dir, branches, git_origin, images, qmake_file, binar
         results[branch] = r
 
     return results
+
+def benchmark_local(src_dir, images, qmake_file, binary):
+    results = {"computer_name": computer_name()}
+
+    compile.compile(qmake_file,cwd=src_dir)
+    r = {"revision": "local"}
+    r["results"] = run(src_dir+"/"+binary, images)
+    results["local"] = r
+    return results
