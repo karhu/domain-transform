@@ -3,6 +3,8 @@
 
 import benchmark
 import pickle
+import getopt
+from sys import argv
 IMAGE_DIR = "testimages"
 
 #TESTIMAGES = ['kyoto', 'bhudda']
@@ -13,13 +15,13 @@ BRANCHES = ['reference', 'master']
 GIT_DIR = '/tmp/domain-transform'
 SRC_DIR = GIT_DIR+"/src"
 QMAKE_FILE = "DomainTransform.pro"
-BINARY = "DomainTransform"
+BINARY = "/../build/DomainTransform"
 IMAGE_DIR = "testimages"
 
 #binary = "../DomainTransform-build-GCC47-Default_build_Release/DomainTransform"
 
 
-def main():
+def main(argv):
     git_repo = GIT_DIR
     git_origin = GITHUB_URL
     src_dir = SRC_DIR
@@ -32,13 +34,28 @@ def main():
     for img_prefix in testimages:
         imgs = map(lambda l: img_prefix+"_"+l+".png", testsizes)
         images += imgs
-    images = map(lambda l: git_repo+"/"+IMAGE_DIR+"/"+l, images)
-    r = benchmark.benchmark(git_repo=git_repo,
-                            src_dir=src_dir,
-                            branches=branches,
-                            git_origin=git_origin,
-                            images=images,
-                            qmake_file=qmake_file, binary=binary)
+
+    try:
+        opts, remainder = getopt.getopt(argv, "d:", ["dir="])
+    except getopt.GetoptError:
+        print "Error in passed parameters"
+    else:
+        if opts:
+            opt, git_dir = opts[0]
+            src_dir = git_dir + "/src/"
+            images = map(lambda l: git_dir+"/"+IMAGE_DIR+"/"+l, images)
+            r = benchmark.benchmark_local(src_dir=src_dir,
+                                          images=images,
+                                          qmake_file=qmake_file, binary=binary)
+        else:
+            print 'In case you want to specify an existing source directory, use "main.py -d <git_dir>" or "main.py dir=<git_dir>'
+            images = map(lambda l: git_repo+"/"+IMAGE_DIR+"/"+l, images)
+            r = benchmark.benchmark(git_repo=git_repo,
+                                        src_dir=src_dir,
+                                        branches=branches,
+                                        git_origin=git_origin,
+                                        images=images,
+                                        qmake_file=qmake_file, binary=binary)
     print r
 
     from datetime import datetime
@@ -46,4 +63,4 @@ def main():
     pickle.dump(r, f)
 
 if __name__ == "__main__":
-    main()
+    main(argv[1:])
