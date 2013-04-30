@@ -7,12 +7,16 @@
 #include "types.h"
 #include "Mat2.h"
 
+#include "FunctionProfiling.h"
+
 /** has an additional column at the end with random data **/
 #ifdef DO_INLINE
 inline
 #endif
 Mat2<float3> diffX(Mat2<float3>& input)
 {
+    FP_CALL_START(FunP::ID_diffX);
+
     const uint W = input.width;
     const uint H = input.height;
 
@@ -29,6 +33,7 @@ Mat2<float3> diffX(Mat2<float3>& input)
         }
     }
 
+    FP_CALL_END(FunP::ID_diffX);
     return output;
 }
 
@@ -38,6 +43,8 @@ inline
 #endif
 Mat2<float3> diffY(Mat2<float3>& input)
 {
+    FP_CALL_START(FunP::ID_diffY);
+
     const uint W = input.width;
     const uint H = input.height;
 
@@ -54,6 +61,7 @@ Mat2<float3> diffY(Mat2<float3>& input)
         }
     }
 
+    FP_CALL_END(FunP::ID_diffY);
     return output;
 }
 
@@ -63,6 +71,9 @@ inline
 #endif
 void cumsumX(Mat2<float>& img)
 {
+    FP_CALL_START(FunP::ID_cumsumX);
+
+    //TODO: optimize for instruction level parallelism
     uint H = img.height;
     uint W = img.width;
     for (uint i=0; i<H; i++)
@@ -75,6 +86,8 @@ void cumsumX(Mat2<float>& img)
             img.data[idx] = sum;
         }
     }
+
+    FP_CALL_END(FunP::ID_cumsumX);
 }
 
 /** In place cumulative sum along height/Y/cols **/
@@ -103,6 +116,8 @@ inline
 #endif
 void transpose(Mat2<float3>& in)
 {
+    FP_CALL_START(FunP::ID_transpose_rgb);
+
     uint H = in.height;
     uint W = in.width;
 
@@ -129,6 +144,8 @@ void transpose(Mat2<float3>& in)
 
     in.height = W;
     in.width = H;
+
+    FP_CALL_END(FunP::ID_transpose_rgb);
 }
 
 #ifdef DO_INLINE
@@ -136,6 +153,8 @@ inline
 #endif
 void transpose(Mat2<float>& in)
 {
+    FP_CALL_START(FunP::ID_transpose_float);
+
     uint H = in.height;
     uint W = in.width;
 
@@ -162,6 +181,8 @@ void transpose(Mat2<float>& in)
 
     in.height = W;
     in.width = H;
+
+    FP_CALL_END(FunP::ID_transpose_float);
 }
 
 #ifdef DO_INLINE

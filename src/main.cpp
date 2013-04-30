@@ -5,6 +5,8 @@
 #include "mainwindow.h"
 #include "rdtsc.h"
 
+#include "FunctionProfiling.h"
+
 using namespace std;
 
 #include "NC.h"
@@ -195,6 +197,9 @@ int main(int argc, char** argv)
     cout << ", 'sum': [" << sumX << ", " << sumY << ", " << sumZ << "]";
     cout << "}" << endl;
 //    std::cout
+
+
+    FunP::PrintData();
 
     img.free();
     tmpImg.free();

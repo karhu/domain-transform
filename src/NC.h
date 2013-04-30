@@ -12,6 +12,8 @@ namespace NC
  **/
 void computeRowSAT(const Mat2<float3>& input, Mat2<float3>& outSAT)
 {
+    FP_CALL_START(FunP::ID_computeRowSAT);
+
     assert(input.width+1 == outSAT.width);
     assert(input.height == outSAT.height);
 
@@ -43,6 +45,8 @@ void computeRowSAT(const Mat2<float3>& input, Mat2<float3>& outSAT)
         outSAT.data[idxSAT].g = sum.g;
         outSAT.data[idxSAT].b = sum.b;
     }
+
+    FP_CALL_END(FunP::ID_computeRowSAT);
 }
 
 void TransformedDomainBoxFilter(Mat2<float3>& img,
@@ -56,6 +60,8 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
 
     computeRowSAT(img,sat);
 
+    FP_CALL_START(FunP::ID_boxFilter);
+
     const uint W = img.width;
     const uint H = img.height;
 
@@ -67,6 +73,8 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
             uint lIdx = lowerIdx.data[idx] + i*(W+1);
             uint uIdx = upperIdx.data[idx] + i*(W+1);
 
+            // TODO: mult vs. div?
+
             int delta = uIdx - lIdx;
 
             img.data[idx].r = (sat.data[uIdx].r - sat.data[lIdx].r) / delta;
@@ -74,10 +82,14 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
             img.data[idx].b = (sat.data[uIdx].b - sat.data[lIdx].b) / delta;
         }
     }
+
+    FP_CALL_END(FunP::ID_boxFilter);
 }
 
 void BoxFilterBounds(const Mat2<float>& ct, float boxR, Mat2<int>& outLowerIdx, Mat2<int>& outUpperIdx)
 {
+    FP_CALL_START(FunP::ID_BoxFilterBounds);
+
     assert(ct.width == outLowerIdx.width && ct.width == outUpperIdx.width);
     assert(ct.height == outLowerIdx.height && ct.height == outUpperIdx.height);
 
@@ -108,11 +120,14 @@ void BoxFilterBounds(const Mat2<float>& ct, float boxR, Mat2<int>& outLowerIdx, 
             outUpperIdx.data[idx] = posR;
         }
     }
+
+    FP_CALL_END(FunP::ID_BoxFilterBounds);
 }
 
 
 void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
 {
+    FP_CALL_START(FunP::ID_ALL);
     // Estimate horizontal and vertical partial derivatives using finite differences.
     Mat2<float3> dIcdx = diffX(img);
     Mat2<float3> dIcdy = diffY(img);
@@ -121,6 +136,8 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     const uint H = img.height;
 
     // Compute the l1-norm distance of neighbor pixels.
+    FP_CALL_START(FunP::ID_domainTransform);
+
     Mat2<float> dIdx(W,H);
     Mat2<float> dIdy(W,H);
 
@@ -158,6 +175,7 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
         dIdx.data[i] = 1.0f + s*dIdx.data[i];
         dIdy.data[i] = 1.0f + s*dIdy.data[i];
     }
+    FP_CALL_END(FunP::ID_domainTransform);
 
     cumsumX(dIdx);
     transpose(dIdy);
@@ -200,6 +218,8 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
 
     satX.free();
     satY.free();
+
+    FP_CALL_END(FunP::ID_ALL);
 }
 
 
