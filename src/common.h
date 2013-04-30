@@ -151,6 +151,207 @@ void transpose(Mat2<float3>& in)
 #ifdef DO_INLINE
 inline
 #endif
+void transpose(Mat2<float>& in, Mat2<float>& out)
+{
+    FP_CALL_START(FunP::ID_transpose_float);
+
+    assert(in.height == out.width);
+    assert(in.width == out.height);
+
+    uint H = in.height;
+    uint W = in.width;
+
+    for (uint y=0; y<H; y++)
+    {
+        for (uint x=0; x<W; x++)
+        {
+            uint idx = y*W + x;
+            uint idxT = x*H + y;
+            out.data[idxT] = in.data[idx];
+        }
+    }
+
+
+    FP_CALL_END(FunP::ID_transpose_float);
+}
+
+#ifdef DO_INLINE
+inline
+#endif
+void transposeB(Mat2<float>& in, Mat2<float>& out)
+{
+    FP_CALL_START(FunP::ID_transpose_float);
+
+    assert(in.height == out.width);
+    assert(in.width == out.height);
+
+    uint H = in.height;
+    uint W = in.width;
+
+    const uint BLOCK = 16;
+
+    uint Hmod = in.height - in.height%BLOCK;
+    uint Wmod = in.width - in.width%BLOCK;
+
+    uint yo,xo;
+    for (yo=0; yo<Hmod; yo+=BLOCK)
+    {
+        for (xo=0; xo<Wmod; xo+=BLOCK)
+        {
+            for (uint y=yo; y<yo+BLOCK; y++)
+            {
+                for (uint x=xo; x<xo+BLOCK; x++)
+                {
+                    uint idx = y*W + x;
+                    uint idxT = x*H + y;
+                    out.data[idxT] = in.data[idx];
+                }
+            }
+        }
+        // right most block
+        xo = Wmod;
+        for (uint y=yo; y<yo+BLOCK; y++)
+        {
+            for (uint x=xo; x<W; x++)
+            {
+                uint idx = y*W + x;
+                uint idxT = x*H + y;
+                out.data[idxT] = in.data[idx];
+            }
+        }
+    }
+    // bottom row
+    yo = Hmod;
+    for (xo=0; xo<Wmod; xo+=BLOCK)
+    {
+        for (uint y=yo; y<H; y++)
+        {
+            for (uint x=xo; x<xo+BLOCK; x++)
+            {
+                uint idx = y*W + x;
+                uint idxT = x*H + y;
+                out.data[idxT] = in.data[idx];
+            }
+        }
+    }
+    // bottom right block
+    for (uint y=yo; y<H; y++)
+    {
+        for (uint x=xo; x<W; x++)
+        {
+            uint idx = y*W + x;
+            uint idxT = x*H + y;
+            out.data[idxT] = in.data[idx];
+        }
+    }
+
+    FP_CALL_END(FunP::ID_transpose_float);
+}
+
+#ifdef DO_INLINE
+inline
+#endif
+void transpose(Mat2<float3>& in, Mat2<float3>& out)
+{
+    FP_CALL_START(FunP::ID_transpose_rgb);
+
+    assert(in.height == out.width);
+    assert(in.width == out.height);
+
+    uint H = in.height;
+    uint W = in.width;
+
+    for (uint y=0; y<H; y++)
+    {
+        for (uint x=0; x<W; x++)
+        {
+            uint idx = y*W + x;
+            uint idxT = x*H + y;
+            out.data[idxT] = in.data[idx];
+        }
+    }
+
+    FP_CALL_END(FunP::ID_transpose_rgb);
+}
+
+
+#ifdef DO_INLINE
+inline
+#endif
+void transposeB(Mat2<float3>& in, Mat2<float3>& out)
+{
+    FP_CALL_START(FunP::ID_transpose_rgb);
+
+    assert(in.height == out.width);
+    assert(in.width == out.height);
+
+    uint H = in.height;
+    uint W = in.width;
+
+    const uint BLOCK = 4;
+
+    uint Hmod = in.height - in.height%BLOCK;
+    uint Wmod = in.width - in.width%BLOCK;
+
+    uint yo,xo;
+    for (yo=0; yo<Hmod; yo+=BLOCK)
+    {
+        for (xo=0; xo<Wmod; xo+=BLOCK)
+        {
+            for (uint y=yo; y<yo+BLOCK; y++)
+            {
+                for (uint x=xo; x<xo+BLOCK; x++)
+                {
+                    uint idx = y*W + x;
+                    uint idxT = x*H + y;
+                    out.data[idxT] = in.data[idx];
+                }
+            }
+        }
+        // right most block
+        xo = Wmod;
+        for (uint y=yo; y<yo+BLOCK; y++)
+        {
+            for (uint x=xo; x<W; x++)
+            {
+                uint idx = y*W + x;
+                uint idxT = x*H + y;
+                out.data[idxT] = in.data[idx];
+            }
+        }
+    }
+    // bottom row
+    yo = Hmod;
+    for (xo=0; xo<Wmod; xo+=BLOCK)
+    {
+        for (uint y=yo; y<H; y++)
+        {
+            for (uint x=xo; x<xo+BLOCK; x++)
+            {
+                uint idx = y*W + x;
+                uint idxT = x*H + y;
+                out.data[idxT] = in.data[idx];
+            }
+        }
+    }
+    // bottom right block
+    for (uint y=yo; y<H; y++)
+    {
+        for (uint x=xo; x<W; x++)
+        {
+            uint idx = y*W + x;
+            uint idxT = x*H + y;
+            out.data[idxT] = in.data[idx];
+        }
+    }
+
+    FP_CALL_END(FunP::ID_transpose_rgb);
+}
+
+
+#ifdef DO_INLINE
+inline
+#endif
 void transpose(Mat2<float>& in)
 {
     FP_CALL_START(FunP::ID_transpose_float);
@@ -185,49 +386,6 @@ void transpose(Mat2<float>& in)
     FP_CALL_END(FunP::ID_transpose_float);
 }
 
-#ifdef DO_INLINE
-inline
-#endif
-Mat2<float> transposed(Mat2<float> in)
-{
-    uint H = in.height;
-    uint W = in.width;
-    Mat2<float> out(H,W);
-
-    for (uint i=0; i<H; i++)
-    {
-        for (uint j=0; j<W; j++)
-        {
-            uint idx = i*W + j;
-            uint idxT = j*H + i;
-            out.data[idxT] = in.data[idx];
-        }
-    }
-    return out;
-}
-
-#ifdef DO_INLINE
-inline
-#endif
-Mat2<float3> transposed(Mat2<float3> in)
-{
-    uint H = in.height;
-    uint W = in.width;
-    Mat2<float3> out(H,W);
-
-    for (uint i=0; i<H; i++)
-    {
-        for (uint j=0; j<W; j++)
-        {
-            uint idx = i*W + j;
-            uint idxT = j*H + i;
-            out.data[idxT].r = in.data[idx].r;
-            out.data[idxT].g = in.data[idx].g;
-            out.data[idxT].b = in.data[idx].b;
-        }
-    }
-    return out;
-}
 
 #ifdef DO_INLINE
 inline

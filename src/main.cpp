@@ -120,6 +120,7 @@ int main(int argc, char** argv)
 
         SavePNG(outputPath,img);
         img.free();
+        FunP::PrintData();
         return 0;
     }
 

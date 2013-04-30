@@ -177,15 +177,19 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     }
     FP_CALL_END(FunP::ID_domainTransform);
 
+    Mat2<float> dIdyT(H,W);
+
     cumsumX(dIdx);
-    transpose(dIdy);
-    cumsumX(dIdy);
+    transpose(dIdy,dIdyT);
+    cumsumX(dIdyT);
 
     Mat2<int> lowerX(dIdx.width,dIdx.height), upperX(dIdx.width,dIdx.height);
-    Mat2<int> lowerY(dIdy.width,dIdy.height), upperY(dIdy.width,dIdy.height);
+    Mat2<int> lowerY(dIdyT.width,dIdyT.height), upperY(dIdyT.width,dIdyT.height);
 
     Mat2<float3> satX(img.width+1,img.height);
     Mat2<float3> satY(img.height+1,img.width);
+
+    Mat2<float3> imgT(img.height,img.width);
 
     for(uint i=0; i<nIterations; i++)
     {
@@ -197,11 +201,11 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
 
         BoxFilterBounds(dIdx,boxR,lowerX,upperX);
         TransformedDomainBoxFilter(img, lowerX, upperX, satX);
-        transpose(img);
+        transpose(img,imgT);
 
-        BoxFilterBounds(dIdy,boxR,lowerY,upperY);
-        TransformedDomainBoxFilter(img, lowerY, upperY,satY);
-        transpose(img);
+        BoxFilterBounds(dIdyT,boxR,lowerY,upperY);
+        TransformedDomainBoxFilter(imgT, lowerY, upperY,satY);
+        transpose(imgT,img);
     }
 
 
@@ -210,6 +214,7 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     dIcdy.free();
     dIdx.free();
     dIdy.free();
+    dIdyT.free();
 
     lowerX.free();
     upperX.free();
@@ -218,6 +223,8 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
 
     satX.free();
     satY.free();
+
+    imgT.free();
 
     FP_CALL_END(FunP::ID_ALL);
 }
