@@ -180,7 +180,7 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     Mat2<float> dIdyT(H,W);
 
     cumsumX(dIdx);
-    transpose(dIdy,dIdyT);
+    transposeB(dIdy,dIdyT);
     cumsumX(dIdyT);
 
     Mat2<int> lowerX(dIdx.width,dIdx.height), upperX(dIdx.width,dIdx.height);
@@ -201,11 +201,11 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
 
         BoxFilterBounds(dIdx,boxR,lowerX,upperX);
         TransformedDomainBoxFilter(img, lowerX, upperX, satX);
-        transpose(img,imgT);
+        transposeB(img,imgT);
 
         BoxFilterBounds(dIdyT,boxR,lowerY,upperY);
         TransformedDomainBoxFilter(imgT, lowerY, upperY,satY);
-        transpose(imgT,img);
+        transposeB(imgT,img);
     }
 
 
