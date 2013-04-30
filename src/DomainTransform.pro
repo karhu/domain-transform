@@ -8,7 +8,6 @@ QMAKE_CXXFLAGS_DEBUG += -O3
 QMAKE_CXXFLAGS_DEBUG += -fno-tree-vectorize
 QMAKE_CXXFLAGS_DEBUG += -m64
 
-
 #QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.7.sdk
 
 # uncomment to activate per function profiling & output
@@ -18,6 +17,10 @@ release {
     # remove asserts from release code
     DEFINES += NDEBUG
 }
+
+DESTDIR = ../build
+OBJECTS_DIR = $${DESTDIR}/obj
+MOC_DIR = $${DESTDIR}/moc
 
 INCLUDEPATH += external/
 
