@@ -44,11 +44,14 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
             # Skip all functions containing all
             if fname == "all":
                 continue
+            val = cycles
             if (mode == "cycles_pixel"):
-                data_dict[fname] = cycles/im_size
-            else:
-                data_dict[fname] = cycles
+                val = cycles/im_size
 
+            if val < 4.0:
+                continue
+
+            data_dict[fname] = val
             if not (fname in tested_functions):
                 tested_functions.append(fname)
             #rtuple += [(fname, perc)]
