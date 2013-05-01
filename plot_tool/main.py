@@ -2,6 +2,8 @@ import numpy as np
 import re
 import matplotlib.pyplot as plt
 import matplotlib.cm as matplotlib_cm
+from matplotlib.font_manager import FontProperties
+
 from PIL import Image
 import pickle
 
@@ -109,8 +111,8 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
     # Limit values to two decimal places
     megapixels = map(lambda l: "%.2f" % l, megapixels)
     plt.xticks(map(lambda l: l+bar_width/2.0, ind), megapixels)
-
-    plt.legend(plt_handles, plt_names, loc="best")
+    #plt.legend(reversed(plt_handles), reversed(plt_names), loc='center left', bbox_to_anchor=(1, 1))
+    plt.legend(reversed(plt_handles), reversed(plt_names), loc='bottom right', bbox_to_anchor=(0.72,0.6)).draggable()
     plt.xlabel("Image Size (Megapixels)")
 
     plt.title("Cycles")
