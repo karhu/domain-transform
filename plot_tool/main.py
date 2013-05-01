@@ -27,6 +27,7 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
     tested_functions = []
     # Loop over all results and get results
     image_size = []
+
     for resultset in results:
         method = resultset["description"]
         runtime_data = resultset["runtime_data"]
@@ -47,13 +48,12 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
             # Skip all functions containing all
             if fname == "all":
                 continue
+
             val = cycles
             if (mode == "cycles_pixel"):
                 val = cycles/im_size
-
-            if val < 4.0:
-                continue
-
+            if (mode == "percentage"):
+                val = perc
             data_dict[fname] = val
             if not (fname in tested_functions):
                 tested_functions.append(fname)
@@ -73,11 +73,12 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
     plt_bar_handles = []
     total_images = len(sorted_img_list)
     ind = range(0, total_images)
-    bar_width = 0.5
+    bar_width = 0.3
 
     colors = matplotlib_cm.rainbow(np.linspace(0, 1, len(tested_functions)))
 
     # Loop over all tested functions
+    bottom_values = [0]*total_images
     for fn, color in zip(tested_functions, colors):
         values = [0]*total_images
         counter = 0
@@ -96,9 +97,13 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
             if fn in mapping.keys():
                 values[counter] = mapping[fn]
             counter += 1
-        print values
-        pl = plt.bar(ind, values, width=bar_width, color=color)
+
+        print fn+str(values)
+        pl = None
+
+        pl = plt.bar(ind, values, width=bar_width, color=color, bottom=bottom_values)
         plt_bar_handles.append((pl, fn))
+        bottom_values = map(lambda l: l[0]+l[1], zip(bottom_values, values))
 
     plt_handles, plt_names = zip(*plt_bar_handles)
 
@@ -109,10 +114,13 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
 
     plt.legend(plt_handles, plt_names, loc="best")
     plt.xlabel("Image Size (Megapixels)")
+
+    plt.title("Cycles")
+
     if (mode == "cycles_pixel"):
         plt.title("Cycles/Pixel")
-    else:
-        plt.title("Cycles")
+    if (mode == "percentage"):
+        plt.title("Runtime (Percentage)")
     plt.grid(True)
 
 
