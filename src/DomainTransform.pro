@@ -12,6 +12,7 @@ QMAKE_CXXFLAGS_DEBUG += -m64
 
 # uncomment to activate per function profiling & output
 DEFINES += DO_FUNCTION_PROFILING
+DEFINES += OUTPUT_JSON
 
 release {
     # remove asserts from release code

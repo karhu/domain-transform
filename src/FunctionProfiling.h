@@ -63,6 +63,21 @@ namespace FunP
     void PrintData()
     {
 #ifdef DO_FUNCTION_PROFILING
+#ifdef OUTPUT_JSON
+        std::cout << "'runtime_data': [" << std::endl;
+        double total = Data[0].total_cylces / 100.0;
+        for (int i=0; i<N_DATA_LINES; i++)
+        {
+            std::cout << "{" << std::endl;
+            std::cout << "'data':        '" << Data[i].name << "',\n";
+            std::cout << "'calls':        " << Data[i].call_counter << ",\n";
+            std::cout << "'total_cycles': " << Data[i].total_cylces << ",\n";
+            std::cout << "'cylces_call':  " << Data[i].total_cylces / Data[i].call_counter << ",\n";
+            std::cout << "'percentage':   " << Data[i].total_cylces / total << "\n";
+            std::cout << "}," << std::endl;
+        }
+        std::cout << "]" << std::endl;
+#else
         std::cout << "-----------------------------------" << std::endl;
         double total = Data[0].total_cylces / 100.0;
         for (int i=0; i<N_DATA_LINES; i++)
@@ -75,6 +90,7 @@ namespace FunP
             std::cout << "-----------------------------------" << std::endl;
         }
         std::cout << std::endl;
+#endif
 #endif
     }
 
