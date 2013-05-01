@@ -184,22 +184,22 @@ int main(int argc, char** argv)
     // o = subprocess.check_output(["./"+command_name])
     // result = ast.literal_eval(o)
 
-    cout << "{'method': '" << methodStringShort << "'";
-    cout << ", 'description': '" << methodString << "'";
-    cout << ", 'input': '" << inputPath << "'";
-    cout << ", 'iterations':  " << nIterations;
-    cout << ", 'sigma_s':  " << sigmaS;
-    cout << ", 'sigma_r': " << sigmaR;
-    cout << ", 'cycles': " << cycles;
-    cout << ", 'total_cycles': " << total_cycles;
-    cout << ", 'benchmark_iterations': " << benchmarkIterations;
-    cout << ", 'benchmark_warmup': " << benchmarkWarmUp;
-    cout << ", 'sum': [" << sumX << ", " << sumY << ", " << sumZ << "]";
-    cout << "}" << endl;
+    cout << "{'method':        '" << methodStringShort << "'" << std::endl;
+    cout << ", 'description':  '" << methodString << "'"<< std::endl;
+    cout << ", 'input':        '" << inputPath << "'"<< std::endl;
+    cout << ", 'iterations':   " << nIterations<< std::endl;
+    cout << ", 'sigma_s':      " << sigmaS<< std::endl;
+    cout << ", 'sigma_r':      " << sigmaR<< std::endl;
+    cout << ", 'cycles':       " << cycles<< std::endl;
+    cout << ", 'total_cycles': " << total_cycles<< std::endl;
+    cout << ", 'benchmark_iterations': " << benchmarkIterations<< std::endl;
+    cout << ", 'benchmark_warmup':     " << benchmarkWarmUp<< std::endl;
+    cout << ", 'sum': [" << sumX << ", " << sumY << ", " << sumZ << "],"<< std::endl;
 //    std::cout
 
 
     FunP::PrintData();
+    cout << "}" << endl;
 
     img.free();
     tmpImg.free();

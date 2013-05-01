@@ -9,7 +9,8 @@ QMAKE_CXXFLAGS_DEBUG += -O0
 #QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.7.sdk
 
 # uncomment to activate per function profiling & output
-#DEFINES += DO_FUNCTION_PROFILING
+DEFINES += DO_FUNCTION_PROFILING
+DEFINES += OUTPUT_JSON
 
 release {
     # remove asserts from release code
