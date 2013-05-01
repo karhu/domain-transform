@@ -37,8 +37,6 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
         im_handle = Image.open(resultset["input"])
         im_size = im_handle.size[0]*im_handle.size[1]
         image_size.append((input_file, im_size))
-        # Store everything in a tuple for easy sorting
-        rtuple = []
 
         data_dict = {}
         for r in runtime_data:
