@@ -1,10 +1,16 @@
 #ifndef MAT2_H
 #define MAT2_H
 
+#include <xmmintrin.h>
+
+//union float3{
+//  struct{ float r,g,b,a; };
+//  __m128 s_for_alignment;
+//};
 
 struct float3{
     float r,g,b;
-};
+} __attribute__((aligned (16)));
 
 struct uchar3{
     uchar r,g,b;

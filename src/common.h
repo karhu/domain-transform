@@ -288,7 +288,7 @@ void transposeB(Mat2<float3>& in, Mat2<float3>& out)
     uint H = in.height;
     uint W = in.width;
 
-    const uint BLOCK = 4;
+    const uint BLOCK = 64;
 
     uint Hmod = in.height - in.height%BLOCK;
     uint Wmod = in.width - in.width%BLOCK;
