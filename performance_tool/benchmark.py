@@ -8,7 +8,7 @@ def computer_name():
     return socket.gethostname()
 
 def run(binary, images, method='nc', args=['-s', '20', '-r', '0.8', '-n', '2']):
-    print binary
+    print "Running "+binary
     results = []
     for image in images:
         o = subprocess.check_output([binary,'-m', method,"-b", "-i", image]+args)
@@ -18,6 +18,7 @@ def run(binary, images, method='nc', args=['-s', '20', '-r', '0.8', '-n', '2']):
 
 def benchmark(git_repo, src_dir, branches, git_origin, images, qmake_file, binary):
     git.clone_repo(git_origin, git_repo)
+    git.fetch_all(git_repo)
     results = {"computer_name": computer_name()}
     for branch in branches:
         git.checkout_branch(git_repo, branch)
