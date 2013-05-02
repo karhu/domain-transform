@@ -120,7 +120,6 @@ int main(int argc, char** argv)
 
         SavePNG(outputPath,img);
         img.free();
-        FunP::PrintData();
         return 0;
     }
 
@@ -188,6 +187,8 @@ int main(int argc, char** argv)
     cout << "{'method':        '" << methodStringShort << "'" << std::endl;
     cout << ", 'description':  '" << methodString << "'"<< std::endl;
     cout << ", 'input':        '" << inputPath << "'"<< std::endl;
+    cout << ", 'width':        " << img.width << std::endl;
+    cout << ", 'height':       " << img.height << std::endl;
     cout << ", 'iterations':   " << nIterations<< std::endl;
     cout << ", 'sigma_s':      " << sigmaS<< std::endl;
     cout << ", 'sigma_r':      " << sigmaR<< std::endl;
@@ -196,9 +197,6 @@ int main(int argc, char** argv)
     cout << ", 'benchmark_iterations': " << benchmarkIterations<< std::endl;
     cout << ", 'benchmark_warmup':     " << benchmarkWarmUp<< std::endl;
     cout << ", 'sum': [" << sumX << ", " << sumY << ", " << sumZ << "],"<< std::endl;
-//    std::cout
-
-
     FunP::PrintData();
     cout << "}" << endl;
 

@@ -8,9 +8,10 @@ from sys import argv
 IMAGE_DIR = "testimages"
 
 #TESTIMAGES = ['kyoto', 'bhudda']
-TESTIMAGES = ['bhudda']
+TESTIMAGES = ['kyoto']
 TESTSIZES = ['640', '720p', '1024', '1080p', '2048', '4k']
-GITHUB_URL = 'https://github.com/karhu/domain-transform.git'
+#GITHUB_URL = 'https://github.com/karhu/domain-transform.git'
+GITHUB_URL = '.' # take current working directory as dir
 BRANCHES = ['master']
 GIT_DIR = '/tmp/domain-transform'
 SRC_DIR = GIT_DIR+"/src"
