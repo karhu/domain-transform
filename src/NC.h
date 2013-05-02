@@ -48,6 +48,38 @@ void computeRowSAT(const Mat2<float3>& input, Mat2<float3>& outSAT)
 
     FP_CALL_END(FunP::ID_computeRowSAT);
 }
+void computeRowSAT1(const Mat2<float>& input, Mat2<float>& outSAT)
+{
+    FP_CALL_START(FunP::ID_computeRowSAT1);
+
+    assert(input.width+1 == outSAT.width);
+    assert(input.height == outSAT.height);
+
+    const uint W = input.width;
+    const uint H = input.height;
+
+    for (uint i=0; i<H; i++)
+    {
+        float sum;
+        sum = 0;
+        for (uint j=0; j<W; j++)
+        {
+            uint idxIMG = i*W + j;
+            uint idxSAT = i*(W+1)+j;
+
+            // store current sum
+            outSAT.data[idxSAT] = sum;
+
+            // increase sum
+            sum += input.data[idxIMG];
+        }
+        // store complete sum
+        uint idxSAT = i*(W+1)+W;
+        outSAT.data[idxSAT] = sum;
+    }
+
+    FP_CALL_END(FunP::ID_computeRowSAT1);
+}
 
 void TransformedDomainBoxFilter(Mat2<float3>& img,
                                 const Mat2<int>& lowerIdx, const Mat2<int>& upperIdx,
@@ -84,6 +116,44 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
     }
 
     FP_CALL_END(FunP::ID_boxFilter);
+}
+void TransformedDomainBoxFilter1(Mat2<float>& r, Mat2<float>& g, Mat2<float>& b,
+                                const Mat2<int>& lowerIdx, const Mat2<int>& upperIdx,
+                                Mat2<float>& satR, Mat2<float>& satG, Mat2<float>& satB)
+{
+//    assert(img.width+1 == sat.width);
+//    assert(img.height == sat.height);
+//    assert(lowerIdx.width == img.width && upperIdx.width == img.width);
+//    assert(lowerIdx.height == img.height && upperIdx.height == img.height);
+
+    computeRowSAT1(r,satR);
+    computeRowSAT1(g,satG);
+    computeRowSAT1(b,satB);
+
+    FP_CALL_START(FunP::ID_boxFilter1);
+
+    const uint W = r.width;
+    const uint H = r.height;
+
+    for (uint i=0; i<H; i++)
+    {
+        for (uint j=0; j<W; j++)
+        {
+            uint idx = i*W + j;
+            uint lIdx = lowerIdx.data[idx] + i*(W+1);
+            uint uIdx = upperIdx.data[idx] + i*(W+1);
+
+            // TODO: mult vs. div?
+
+            int delta = uIdx - lIdx;
+
+            r.data[idx] = (satR.data[uIdx] - satR.data[lIdx]) / delta;
+            g.data[idx] = (satG.data[uIdx] - satG.data[lIdx]) / delta;
+            b.data[idx] = (satB.data[uIdx] - satB.data[lIdx]) / delta;
+        }
+    }
+
+    FP_CALL_END(FunP::ID_boxFilter1);
 }
 
 void BoxFilterBounds(const Mat2<float>& ct, float boxR, Mat2<int>& outLowerIdx, Mat2<int>& outUpperIdx)
@@ -125,15 +195,20 @@ void BoxFilterBounds(const Mat2<float>& ct, float boxR, Mat2<int>& outLowerIdx, 
 }
 
 
-void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
+void filter(Mat2<float>& r,Mat2<float>& g, Mat2<float>& b, float sigma_s, float sigma_r, uint nIterations)
 {
     FP_CALL_START(FunP::ID_ALL);
     // Estimate horizontal and vertical partial derivatives using finite differences.
-    Mat2<float3> dIcdx = diffX(img);
-    Mat2<float3> dIcdy = diffY(img);
+    Mat2<float> dIcdxR = diffX1(r);
+    Mat2<float> dIcdxG = diffX1(g);
+    Mat2<float> dIcdxB = diffX1(b);
 
-    const uint W = img.width;
-    const uint H = img.height;
+    Mat2<float> dIcdyR = diffY1(r);
+    Mat2<float> dIcdyG = diffY1(g);
+    Mat2<float> dIcdyB = diffY1(b);
+
+    const uint W = r.width;
+    const uint H = r.height;
 
     // Compute the l1-norm distance of neighbor pixels.
     FP_CALL_START(FunP::ID_domainTransform);
@@ -147,9 +222,9 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
         for (uint j=1; j<W; j++)
         {
             uint idx = i*W + j;
-            dIdx.data[idx] = fabs(dIcdx.data[idx-1].r) +
-                             fabs(dIcdx.data[idx-1].g) +
-                             fabs(dIcdx.data[idx-1].b);
+            dIdx.data[idx] = fabs(dIcdxR.data[idx-1]) +
+                             fabs(dIcdxG.data[idx-1]) +
+                             fabs(dIcdxB.data[idx-1]);
         }
     }
 
@@ -162,9 +237,9 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
-            dIdy.data[idx] = fabs(dIcdy.data[idx-W].r) +
-                             fabs(dIcdy.data[idx-W].g) +
-                             fabs(dIcdy.data[idx-W].b);
+            dIdy.data[idx] = fabs(dIcdyR.data[idx-W]) +
+                             fabs(dIcdyG.data[idx-W]) +
+                             fabs(dIcdyB.data[idx-W]);
         }
     }
 
@@ -186,10 +261,16 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     Mat2<int> lowerX(dIdx.width,dIdx.height), upperX(dIdx.width,dIdx.height);
     Mat2<int> lowerY(dIdyT.width,dIdyT.height), upperY(dIdyT.width,dIdyT.height);
 
-    Mat2<float3> satX(img.width+1,img.height);
-    Mat2<float3> satY(img.height+1,img.width);
+    Mat2<float> satRX(r.width+1,r.height);
+    Mat2<float> satGX(g.width+1,g.height);
+    Mat2<float> satBX(b.width+1,b.height);
+    Mat2<float> satRY(r.height+1,r.width);
+    Mat2<float> satGY(g.height+1,g.width);
+    Mat2<float> satBY(b.height+1,b.width);
 
-    Mat2<float3> imgT(img.height,img.width);
+    Mat2<float> rT(r.height,r.width);
+    Mat2<float> gT(g.height,g.width);
+    Mat2<float> bT(b.height,b.width);
 
     for(uint i=0; i<nIterations; i++)
     {
@@ -200,18 +281,26 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
         float boxR = sqrt(3) * sigmaHi;
 
         BoxFilterBounds(dIdx,boxR,lowerX,upperX);
-        TransformedDomainBoxFilter(img, lowerX, upperX, satX);
-        transposeB(img,imgT);
+        TransformedDomainBoxFilter1(r,g,b, lowerX, upperX, satRX, satGX, satBX);
+        transposeB(r,rT);
+        transposeB(g,gT);
+        transposeB(b,bT);
 
         BoxFilterBounds(dIdyT,boxR,lowerY,upperY);
-        TransformedDomainBoxFilter(imgT, lowerY, upperY,satY);
-        transposeB(imgT,img);
+        TransformedDomainBoxFilter1(rT, gT, bT, lowerY, upperY, satRY, satGY, satBY);
+        transposeB(rT,r);
+        transposeB(gT,g);
+        transposeB(bT,b);
     }
 
 
     // cleanup
-    dIcdx.free();
-    dIcdy.free();
+    dIcdxR.free();
+    dIcdxG.free();
+    dIcdxB.free();
+    dIcdyR.free();
+    dIcdyG.free();
+    dIcdyB.free();
     dIdx.free();
     dIdy.free();
     dIdyT.free();
@@ -221,10 +310,16 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     lowerY.free();
     upperY.free();
 
-    satX.free();
-    satY.free();
+    satRX.free();
+    satGX.free();
+    satBX.free();
+    satRY.free();
+    satGY.free();
+    satBY.free();
 
-    imgT.free();
+    rT.free();
+    gT.free();
+    bT.free();
 
     FP_CALL_END(FunP::ID_ALL);
 }

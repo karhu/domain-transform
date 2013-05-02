@@ -37,6 +37,33 @@ Mat2<float3> diffX(Mat2<float3>& input)
     return output;
 }
 
+/** has an additional column at the end with random data **/
+#ifdef DO_INLINE
+inline
+#endif
+Mat2<float> diffX1(Mat2<float>& input)
+{
+    FP_CALL_START(FunP::ID_diffX1);
+
+    const uint W = input.width;
+    const uint H = input.height;
+
+    Mat2<float> output(W,H);
+
+    for (uint i=0; i<H; i++)
+    {
+        for (uint j=0; j<W-1; j++)
+        {
+            uint idx = i*W + j;
+            output.data[idx] = input.data[idx+1] - input.data[idx];
+        }
+    }
+
+    FP_CALL_END(FunP::ID_diffX1);
+    return output;
+}
+
+
 /** has an additional row at the end with random data **/
 #ifdef DO_INLINE
 inline
@@ -62,6 +89,30 @@ Mat2<float3> diffY(Mat2<float3>& input)
     }
 
     FP_CALL_END(FunP::ID_diffY);
+    return output;
+}
+#ifdef DO_INLINE
+inline
+#endif
+Mat2<float> diffY1(Mat2<float>& input)
+{
+    FP_CALL_START(FunP::ID_diffY1);
+
+    const uint W = input.width;
+    const uint H = input.height;
+
+    Mat2<float> output(W,H);
+
+    for (uint i=0; i<H-1; i++)
+    {
+        for (uint j=0; j<W; j++)
+        {
+            uint idx = i*W + j;
+            output.data[idx] = input.data[idx+W] - input.data[idx];
+        }
+    }
+
+    FP_CALL_END(FunP::ID_diffY1);
     return output;
 }
 
@@ -404,6 +455,21 @@ void copy(const Mat2<float3>& source, Mat2<float3>& target)
     }
 }
 
+#ifdef DO_INLINE
+inline
+#endif
+void copy(const Mat2<float>& source, Mat2<float>& target)
+{
+    const uint H = source.height;
+    const uint W = source.width;
 
+    assert(source.height == target.height);
+    assert(source.width == target.width);
+
+    for (uint i=0; i<W*H; i++)
+    {
+        target.data[i] = source.data[i];
+    }
+}
 
 #endif // COMMON_H

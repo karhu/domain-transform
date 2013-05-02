@@ -36,14 +36,18 @@ namespace FunP
     {
         ID_ALL = 0,
         ID_diffX,
+        ID_diffX1,
         ID_diffY,
+        ID_diffY1,
         ID_domainTransform,
         ID_transpose_float,
         ID_transpose_rgb,
         ID_cumsumX,
         ID_BoxFilterBounds,
         ID_computeRowSAT,
+        ID_computeRowSAT1,
         ID_boxFilter,
+        ID_boxFilter1,
     };
 
 ///////////////////////////////////////////////////////

@@ -107,6 +107,22 @@ int main(int argc, char** argv)
     }
 
     Mat2<float3> img = LoadPNG(inputPath);
+    int height = img.height;
+    int width = img.width;
+    Mat2<float> r(width, height);
+    Mat2<float> g(width, height);
+    Mat2<float> b(width, height);
+    for (uint i=0; i<height; i++)
+    {
+        for (uint j=0; j<width; j++)
+        {
+            uint idx = i*width+j;
+            r.data[idx] = img.data[idx].r;
+            g.data[idx] = img.data[idx].g;
+            b.data[idx] = img.data[idx].b;
+        }
+
+    }
 
     if (!benchmark)
     {
@@ -115,9 +131,21 @@ int main(int argc, char** argv)
 
         if (method == RF)
             RF::filter(img, sigmaS, sigmaR, nIterations);
-        else if (method == NC)
-            NC::filter(img, sigmaS, sigmaR, nIterations);
+        else if (method == NC) {
+            NC::filter(r,g,b, sigmaS, sigmaR, nIterations);
 
+            for (uint i=0; i<height; i++)
+            {
+                for (uint j=0; j<width; j++)
+                {
+                    uint idx = i*width+j;
+                    img.data[idx].r = r.data[idx];
+                    img.data[idx].g = g.data[idx];
+                    img.data[idx].b = b.data[idx];
+                }
+
+            }
+        }
         SavePNG(outputPath,img);
         img.free();
         return 0;
@@ -133,6 +161,9 @@ int main(int argc, char** argv)
     CPUID(); RDTSC(start); RDTSC(end);
 
     Mat2<float3> tmpImg(img.width,img.height);
+    Mat2<float> tmpR(img.width,img.height);
+    Mat2<float> tmpG(img.width,img.height);
+    Mat2<float> tmpB(img.width,img.height);
     double total_cycles = 0;
 
 
@@ -151,31 +182,48 @@ int main(int argc, char** argv)
             RDTSC(end); CPUID();
             total_cycles += ((double)COUNTER_DIFF(end, start));
         }
+        uint width = img.width;
+        for (uint x=0; x<width; x++) {
+            for (uint y=0; y<img.height; y++)
+            {
+                sumX += img.data[y*width+x].r;
+                sumY += img.data[y*width+x].g;
+                sumZ += img.data[y*width+x].b;
+            }
+        }
+
 
     } else if (method == NC)
     {
         if (benchmarkWarmUp)
         {
-            NC::filter(img, sigmaS, sigmaR, nIterations);
+            copy(r,tmpR);
+            copy(g,tmpG);
+            copy(b,tmpB);
+            NC::filter(tmpR, tmpB, tmpG, sigmaS, sigmaR, nIterations);
         }
         for (int i=0; i<benchmarkIterations; i++)
         {
-            copy(img,tmpImg);
+            copy(r,tmpR);
+            copy(g,tmpG);
+            copy(b,tmpB);
             CPUID(); RDTSC(start);
-            NC::filter(tmpImg, sigmaS, sigmaR, nIterations);
+            NC::filter(tmpR, tmpG, tmpB, sigmaS, sigmaR, nIterations);
             RDTSC(end); CPUID();
             total_cycles += ((double)COUNTER_DIFF(end, start));
         }
-    }
-    uint width = img.width;
-    for (uint x=0; x<width; x++) {
-        for (uint y=0; y<img.height; y++)
-        {
-            sumX += img.data[y*width+x].r;
-            sumY += img.data[y*width+x].g;
-            sumZ += img.data[y*width+x].b;
+        uint width = img.width;
+        for (uint x=0; x<width; x++) {
+            for (uint y=0; y<img.height; y++)
+            {
+                sumX += r.data[y*width+x];
+                sumY += g.data[y*width+x];
+                sumZ += b.data[y*width+x];
+            }
         }
+
     }
+
 
     double cycles = total_cycles / ((double) benchmarkIterations);
 
@@ -202,6 +250,12 @@ int main(int argc, char** argv)
 
     img.free();
     tmpImg.free();
+    r.free();
+    g.free();
+    b.free();
+    tmpR.free();
+    tmpG.free();
+    tmpB.free();
     return 0;
 }
 
