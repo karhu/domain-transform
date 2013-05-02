@@ -6,10 +6,11 @@ import pickle
 IMAGE_DIR = "testimages"
 
 #TESTIMAGES = ['kyoto', 'bhudda']
-TESTIMAGES = ['bhudda']
+TESTIMAGES = ['kyoto']
 TESTSIZES = ['640', '720p', '1024', '1080p', '2048', '4k']
-GITHUB_URL = 'https://github.com/karhu/domain-transform.git'
-BRANCHES = ['reference', 'master']
+#GITHUB_URL = 'https://github.com/karhu/domain-transform.git'
+GITHUB_URL = '.' # take current working directory as dir
+BRANCHES = ['master']
 GIT_DIR = '/tmp/domain-transform'
 SRC_DIR = GIT_DIR+"/src"
 QMAKE_FILE = "DomainTransform.pro"
@@ -46,4 +47,4 @@ def main():
     pickle.dump(r, f)
 
 if __name__ == "__main__":
-    main()
+    main(argv[1:])

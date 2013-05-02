@@ -1,21 +1,37 @@
 TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
-CONFIG += qt
-
-QMAKE_CXXFLAGS_DEBUG -= -O2
-QMAKE_CXXFLAGS_DEBUG += -O0
-
-#QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.7.sdk
 
 # uncomment to activate per function profiling & output
-DEFINES += DO_FUNCTION_PROFILING
-DEFINES += OUTPUT_JSON
+########################################################
+    DEFINES += DO_FUNCTION_PROFILING
 
-release {
-    # remove asserts from release code
-    DEFINES += NDEBUG
-}
+
+# release settings
+########################################################
+    release {
+        # remove asserts from release code
+        DEFINES += NDEBUG
+    }
+    QMAKE_CXXFLAGS_RELEASE -= -O2
+    QMAKE_CXXFLAGS_RELEASE += -O3
+    QMAKE_CXXFLAGS_RELEASE += -m64
+
+# debug settings
+########################################################
+    debug {
+    }
+    QMAKE_CXXFLAGS_DEBUG -= -O2
+    QMAKE_CXXFLAGS_DEBUG += -O3
+    QMAKE_CXXFLAGS_DEBUG += -m64
+
+
+# we really don't want no auto vectorisation for now :P
+########################################################
+    QMAKE_CXXFLAGS_RELEASE += -fno-tree-vectorize
+    QMAKE_CXXFLAGS_DEBUG += -fno-tree-vectorize
+    QMAKE_CXXFLAGS += -fno-tree-vectorize
+
 
 INCLUDEPATH += external/
 
