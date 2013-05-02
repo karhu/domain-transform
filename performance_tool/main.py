@@ -10,13 +10,17 @@ IMAGE_DIR = "testimages"
 #TESTIMAGES = ['kyoto', 'bhudda']
 TESTIMAGES = ['kyoto']
 TESTSIZES = ['640', '720p', '1024', '1080p', '2048', '4k']
-#GITHUB_URL = 'https://github.com/karhu/domain-transform.git'
+# We are using . as a checkout base
+# GITHUB_URL = 'git@github.com:karhu/domain-transform.git'
 GITHUB_URL = '.' # take current working directory as dir
-BRANCHES = ['master']
+BRANCHES = ['master', 'inplace_image_transform']
+#location where the git should clone
 GIT_DIR = '/tmp/domain-transform'
 SRC_DIR = GIT_DIR+"/src"
 QMAKE_FILE = "DomainTransform.pro"
-BINARY = "/../build/DomainTransform"
+
+# Relative to src_dir
+BINARY = "../build/DomainTransform"
 IMAGE_DIR = "testimages"
 
 #binary = "../DomainTransform-build-GCC47-Default_build_Release/DomainTransform"
