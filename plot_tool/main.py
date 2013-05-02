@@ -30,6 +30,7 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
     # Loop over all results and get results
     image_size = []
 
+    # Iterate over all images in resultset
     for resultset in results:
         method = resultset["description"]
         runtime_data = resultset["runtime_data"]
@@ -41,6 +42,7 @@ def plot_branch_with_functions(name, data, mode="cycles_pixel"):
         image_size.append((input_file, im_size))
 
         data_dict = {}
+        # Iterate over all functions
         for r in runtime_data:
             fname = r["data"]
             perc  = r["percentage"]
