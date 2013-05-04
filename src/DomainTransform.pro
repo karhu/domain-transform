@@ -49,7 +49,6 @@ HEADERS += \
     external/tclap/CmdLine.h \
     external/io_png/io_png.h \
     Image.h \
-    mainwindow.h \
     NC.h \
     Exception.h \
     Mat2.h \

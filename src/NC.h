@@ -58,7 +58,6 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
 
     computeRowSAT(img,sat);
 
-
     FP_CALL_START(FunP::ID_boxFilter);
 
     const uint W = img.width;
