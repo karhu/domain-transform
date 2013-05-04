@@ -10,7 +10,8 @@
 
 struct float3{
     float r,g,b;
-} __attribute__((aligned (16)));
+};
+//__attribute__((aligned (16)));
 
 struct uchar3{
     uchar r,g,b;

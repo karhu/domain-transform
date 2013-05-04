@@ -43,14 +43,12 @@ INCLUDEPATH += external/
 LIBS+= -lpng
 
 SOURCES += main.cpp \
-    external/io_png/io_png.c \
-    mainwindow.cpp
+    external/io_png/io_png.c
 
 HEADERS += \
     external/tclap/CmdLine.h \
     external/io_png/io_png.h \
     Image.h \
-    mainwindow.h \
     NC.h \
     Exception.h \
     Mat2.h \
@@ -59,6 +57,5 @@ HEADERS += \
     rdtsc.h \
     FunctionProfiling.h
 
-FORMS += \
-    mainwindow.ui
+FORMS +=
 
