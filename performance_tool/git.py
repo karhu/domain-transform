@@ -42,3 +42,8 @@ def fetch_all(directory, git_command=GIT_COMMAND):
     print "Fetching all from {directory}".format(directory=directory)
 
     subprocess.check_call([git_command, "fetch", "-a"], cwd=directory)
+
+def replace_remote(directory, remote, origin="origin", git_command=GIT_COMMAND):
+    print "Replacing origin in {directory} with {origin}".format(origin=origin, directory=directory)
+    subprocess.check_call([git_command, "remote", "rm", origin], cwd=directory)
+    subprocess.check_call([git_command, "remote", "add", origin, remote], cwd=directory)

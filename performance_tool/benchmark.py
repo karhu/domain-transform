@@ -3,6 +3,7 @@ import git
 import socket
 import subprocess
 import compile
+import os
 
 def computer_name():
     return socket.gethostname()
@@ -16,8 +17,14 @@ def run(binary, images, method='nc', args=['-s', '20', '-r', '0.8', '-n', '2']):
         results.append(r)
     return results
 
-def benchmark(git_repo, src_dir, branches, git_origin, images, qmake_file, binary):
-    git.clone_repo(git_origin, git_repo)
+def benchmark(git_repo, src_dir, branches, git_origin, images, qmake_file, binary, clone_url=None):
+    if (not os.path.exists(git_repo)):
+        if (clone_url != None):
+            git.clone_repo(clone_url, git_repo)
+            git.fetch(git_repo)
+            git.replace_remote(git_repo, clone_url)
+        else:
+            git.clone_repo(git_origin, git_repo)
     git.fetch_all(git_repo)
     results = {"computer_name": computer_name()}
     for branch in branches:

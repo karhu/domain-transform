@@ -11,8 +11,9 @@ IMAGE_DIR = "testimages"
 TESTIMAGES = ['kyoto']
 TESTSIZES = ['640', '720p', '1024', '1080p', '2048', '4k']
 # We are using . as a checkout base
-# GITHUB_URL = 'git@github.com:karhu/domain-transform.git'
-GITHUB_URL = '.' # take current working directory as dir
+GITHUB_URL = 'https://github.com/karhu/domain-transform.git'
+CLONE_URL = 'http://gitlab.rsp.li/domain-transform-project.git'
+#GITHUB_URL = '.' # take current working directory as dir
 BRANCHES = ['master', 'inplace_image_transform']
 #location where the git should clone
 GIT_DIR = '/tmp/domain-transform'
@@ -60,7 +61,8 @@ def main(argv):
                                         branches=branches,
                                         git_origin=git_origin,
                                         images=images,
-                                        qmake_file=qmake_file, binary=binary)
+                                        qmake_file=qmake_file, binary=binary,
+                                        clone_url=CLONE_URL)
     print r
 
     from datetime import datetime
