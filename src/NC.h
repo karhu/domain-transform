@@ -50,51 +50,19 @@ void computeRowSAT(const Mat2<float3>& input, Mat2<float3>& outSAT)
 }
 
 void TransformedDomainBoxFilter(Mat2<float3>& img,
-                                const Mat2<int>& lowerIdx, const Mat2<int>& upperIdx,
-                                Mat2<float3>& sat)
+                                Mat2<float3>& sat,
+                                Mat2<float> dIdx, float boxR)
 {
     assert(img.width+1 == sat.width);
     assert(img.height == sat.height);
-    assert(lowerIdx.width == img.width && upperIdx.width == img.width);
-    assert(lowerIdx.height == img.height && upperIdx.height == img.height);
 
     computeRowSAT(img,sat);
+
 
     FP_CALL_START(FunP::ID_boxFilter);
 
     const uint W = img.width;
     const uint H = img.height;
-
-    for (uint i=0; i<H; i++)
-    {
-        for (uint j=0; j<W; j++)
-        {
-            uint idx = i*W + j;
-            uint lIdx = lowerIdx.data[idx] + i*(W+1);
-            uint uIdx = upperIdx.data[idx] + i*(W+1);
-
-            // TODO: mult vs. div?
-
-            int delta = uIdx - lIdx;
-
-            img.data[idx].r = (sat.data[uIdx].r - sat.data[lIdx].r) / delta;
-            img.data[idx].g = (sat.data[uIdx].g - sat.data[lIdx].g) / delta;
-            img.data[idx].b = (sat.data[uIdx].b - sat.data[lIdx].b) / delta;
-        }
-    }
-
-    FP_CALL_END(FunP::ID_boxFilter);
-}
-
-void BoxFilterBounds(const Mat2<float>& ct, float boxR, Mat2<int>& outLowerIdx, Mat2<int>& outUpperIdx)
-{
-    FP_CALL_START(FunP::ID_BoxFilterBounds);
-
-    assert(ct.width == outLowerIdx.width && ct.width == outUpperIdx.width);
-    assert(ct.height == outLowerIdx.height && ct.height == outUpperIdx.height);
-
-    const uint W = ct.width;
-    const uint H = ct.height;
 
     for (uint i=0; i<H; i++)
     {
@@ -104,24 +72,33 @@ void BoxFilterBounds(const Mat2<float>& ct, float boxR, Mat2<int>& outLowerIdx, 
         {
             uint idx = i*W + j;
 
-            float dtL = ct.data[idx] - boxR;
-            float dtR = ct.data[idx] + boxR;
+            // compute box filter bounds
+            float dtL = dIdx.data[idx] - boxR;
+            float dtR = dIdx.data[idx] + boxR;
 
-            while (ct.data[i*W+posL] < dtL && posL < W-1)
+            while (dIdx.data[i*W+posL] < dtL && posL < W-1)
             {
                 posL++;
             }
-            while (posR < W && ct.data[i*W+posR] < dtR )  // attention, allows for index = W
+            while (posR < W && dIdx.data[i*W+posR] < dtR )  // attention, allows for index = W
             {
                 posR++;
             }
 
-            outLowerIdx.data[idx] = posL;
-            outUpperIdx.data[idx] = posR;
+            // compute box filter value
+            uint lIdx = posL + i*(W+1);
+            uint uIdx = posR + i*(W+1);
+
+            // TODO: mult vs. div?
+            int delta = uIdx - lIdx;
+
+            img.data[idx].r = (sat.data[uIdx].r - sat.data[lIdx].r) / delta;
+            img.data[idx].g = (sat.data[uIdx].g - sat.data[lIdx].g) / delta;
+            img.data[idx].b = (sat.data[uIdx].b - sat.data[lIdx].b) / delta;
         }
     }
 
-    FP_CALL_END(FunP::ID_BoxFilterBounds);
+    FP_CALL_END(FunP::ID_boxFilter);
 }
 
 
@@ -183,9 +160,6 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     transposeB(dIdy,dIdyT);
     cumsumX(dIdyT);
 
-    Mat2<int> lowerX(dIdx.width,dIdx.height), upperX(dIdx.width,dIdx.height);
-    Mat2<int> lowerY(dIdyT.width,dIdyT.height), upperY(dIdyT.width,dIdyT.height);
-
     Mat2<float3> satX(img.width+1,img.height);
     Mat2<float3> satY(img.height+1,img.width);
 
@@ -199,12 +173,10 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
         // Compute the radius of the box filter with the desired variance.
         float boxR = sqrt(3) * sigmaHi;
 
-        BoxFilterBounds(dIdx,boxR,lowerX,upperX);
-        TransformedDomainBoxFilter(img, lowerX, upperX, satX);
+        TransformedDomainBoxFilter(img, satX, dIdx, boxR);
         transposeB(img,imgT);
 
-        BoxFilterBounds(dIdyT,boxR,lowerY,upperY);
-        TransformedDomainBoxFilter(imgT, lowerY, upperY,satY);
+        TransformedDomainBoxFilter(imgT,satY,dIdyT,boxR);
         transposeB(imgT,img);
     }
 
@@ -215,11 +187,6 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     dIdx.free();
     dIdy.free();
     dIdyT.free();
-
-    lowerX.free();
-    upperX.free();
-    lowerY.free();
-    upperY.free();
 
     satX.free();
     satY.free();
