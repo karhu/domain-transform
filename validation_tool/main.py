@@ -25,7 +25,7 @@ test_arguments = {
 
 reference_argument = 'ref'
 
-test_binary = "../DomainTransform-build-GCC47-Default_build_Release/DomainTransform"
+test_binary = "../build/DomainTransform"
 reference_binary = test_binary
 
 
