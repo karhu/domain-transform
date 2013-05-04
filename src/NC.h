@@ -105,42 +105,42 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
 {
     FP_CALL_START(FunP::ID_ALL);
     // Estimate horizontal and vertical partial derivatives using finite differences.
-    Mat2<float3> dIcdx = diffX(img);
-    Mat2<float3> dIcdy = diffY(img);
-
-    const uint W = img.width;
-    const uint H = img.height;
 
     // Compute the l1-norm distance of neighbor pixels.
     FP_CALL_START(FunP::ID_domainTransform);
 
+    const uint W = img.width;
+    const uint H = img.height;
+
     Mat2<float> dIdx(W,H);
-    Mat2<float> dIdy(W,H);
 
     for (uint i=0; i<H; i++)
     {
         dIdx.data[i*W] = 0.0f;
-        for (uint j=1; j<W; j++)
+        for (uint j=0; j<W-1; j++)
         {
             uint idx = i*W + j;
-            dIdx.data[idx] = fabs(dIcdx.data[idx-1].r) +
-                             fabs(dIcdx.data[idx-1].g) +
-                             fabs(dIcdx.data[idx-1].b);
+            dIdx.data[idx + 1] = fabs(img.data[idx+1].r - img.data[idx].r) +
+                                 fabs(img.data[idx+1].g - img.data[idx].g) +
+                                 fabs(img.data[idx+1].b - img.data[idx].b);
         }
     }
+
+    Mat2<float> dIdy(W,H);
 
     for (uint j=0; j<W; j++)
     {
         dIdy.data[j] = 0.0f;
     }
-    for (uint i=1; i<H; i++)
+
+    for (uint i=0; i<H-1; i++)
     {
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
-            dIdy.data[idx] = fabs(dIcdy.data[idx-W].r) +
-                             fabs(dIcdy.data[idx-W].g) +
-                             fabs(dIcdy.data[idx-W].b);
+            dIdy.data[idx + W] = fabs(img.data[idx+W].r - img.data[idx].r) +
+                                 fabs(img.data[idx+W].g - img.data[idx].g) +
+                                 fabs(img.data[idx+W].b - img.data[idx].b);
         }
     }
 
@@ -181,8 +181,6 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
 
 
     // cleanup
-    dIcdx.free();
-    dIcdy.free();
     dIdx.free();
     dIdy.free();
     dIdyT.free();
