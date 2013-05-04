@@ -42,12 +42,12 @@ Mat2<float3> LoadPNG(const std::string& path)
     img_g = img + nx * ny;      // green channel
     img_b = img + 2 * nx * ny;  // blue channel
 
-    float* d = (float*) mat.data;
+    float3* d = mat.data;
     for (ulong i=0; i<nx*ny; i++)
     {
-        d[3*i] = img_r[i];
-        d[3*i+1] = img_g[i];
-        d[3*i+2] = img_b[i];
+        d[i].r = img_r[i];
+        d[i].g = img_g[i];
+        d[i].b = img_b[i];
     }
 
     c_free(img);
