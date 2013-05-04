@@ -53,20 +53,45 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
                                 Mat2<float3>& sat,
                                 Mat2<float> dIdx, float boxR)
 {
-    assert(img.width+1 == sat.width);
-    assert(img.height == sat.height);
+    assert(img.width == imgOut.width);
+    assert(img.height == imgOut.height);
 
-    computeRowSAT(img,sat);
+//    computeRowSAT(img,sat);
 
     FP_CALL_START(FunP::ID_boxFilter);
 
     const uint W = img.width;
     const uint H = img.height;
 
+    std::vector<float3> tmpSAT(W+1);
+
     for (uint i=0; i<H; i++)
     {
         uint posL = 0;
         uint posR = 0;
+
+        // row sat
+        float3 sum; sum.r = sum.g = sum.b = 0;
+        for (uint j=0; j<W; j++)
+        {
+            uint idxIMG = i*W + j;
+            uint idxSAT = j;
+
+            // store current sum
+            tmpSAT[idxSAT].r = sum.r;
+            tmpSAT[idxSAT].g = sum.g;
+            tmpSAT[idxSAT].b = sum.b;
+
+            // increase sum
+            sum.r += img.data[idxIMG].r;
+            sum.g += img.data[idxIMG].g;
+            sum.b += img.data[idxIMG].b;
+        }
+        // store complete sum
+        tmpSAT[W].r = sum.r;
+        tmpSAT[W].g = sum.g;
+        tmpSAT[W].b = sum.b;
+
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
@@ -85,15 +110,15 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
             }
 
             // compute box filter value
-            uint lIdx = posL + i*(W+1);
-            uint uIdx = posR + i*(W+1);
+            uint lIdx = posL;
+            uint uIdx = posR;
 
             // TODO: mult vs. div?
             int delta = uIdx - lIdx;
 
-            img.data[idx].r = (sat.data[uIdx].r - sat.data[lIdx].r) / delta;
-            img.data[idx].g = (sat.data[uIdx].g - sat.data[lIdx].g) / delta;
-            img.data[idx].b = (sat.data[uIdx].b - sat.data[lIdx].b) / delta;
+            img.data[idx].r = (tmpSAT[uIdx].r - tmpSAT[lIdx].r) / delta;
+            img.data[idx].g = (tmpSAT[uIdx].g - tmpSAT[lIdx].g) / delta;
+            img.data[idx].b = (tmpSAT[uIdx].b - tmpSAT[lIdx].b) / delta;
         }
     }
 

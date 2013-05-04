@@ -9,17 +9,11 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <iostream>
-inline void c_free(void* ptr)
-{
-    free(ptr);
-}
 
 typedef unsigned char uchar;
 typedef unsigned char uint8;
 
 using namespace std;
-
-
 
 
 Mat2<float3> LoadPNG(const std::string& path)
@@ -50,7 +44,7 @@ Mat2<float3> LoadPNG(const std::string& path)
         d[i].b = img_b[i];
     }
 
-    c_free(img);
+    free(img);
 
     return mat;
 }
