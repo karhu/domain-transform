@@ -1,3 +1,5 @@
 DomainTransform-build-Desktop-Debug
 /build/
 /*.pickle
+
+.DS_Store
