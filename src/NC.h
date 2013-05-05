@@ -112,45 +112,53 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     const uint W = img.width;
     const uint H = img.height;
 
+    float s = sigma_s/sigma_r;
+
     Mat2<float> dIdx(W,H);
-
-    for (uint i=0; i<H; i++)
-    {
-        dIdx.data[i*W] = 0.0f;
-        for (uint j=0; j<W-1; j++)
-        {
-            uint idx = i*W + j;
-            dIdx.data[idx + 1] = fabs(img.data[idx+1].r - img.data[idx].r) +
-                                 fabs(img.data[idx+1].g - img.data[idx].g) +
-                                 fabs(img.data[idx+1].b - img.data[idx].b);
-        }
-    }
-
     Mat2<float> dIdy(W,H);
 
     for (uint j=0; j<W; j++)
     {
-        dIdy.data[j] = 0.0f;
+        dIdy.data[j] = 1.0f;
     }
 
     for (uint i=0; i<H-1; i++)
     {
-        for (uint j=0; j<W; j++)
+        dIdx.data[i*W] = 1.0f;
+        for (uint j=0; j<W-1; j++)
         {
             uint idx = i*W + j;
-            dIdy.data[idx + W] = fabs(img.data[idx+W].r - img.data[idx].r) +
-                                 fabs(img.data[idx+W].g - img.data[idx].g) +
-                                 fabs(img.data[idx+W].b - img.data[idx].b);
+            dIdx.data[idx+1] = 1.0f +
+                               s*(fabs(img.data[idx+1].r - img.data[idx].r) +
+                                  fabs(img.data[idx+1].g - img.data[idx].g) +
+                                  fabs(img.data[idx+1].b - img.data[idx].b));
+            dIdy.data[idx+W] = 1.0f +
+                               s*(fabs(img.data[idx+W].r - img.data[idx].r) +
+                                  fabs(img.data[idx+W].g - img.data[idx].g) +
+                                  fabs(img.data[idx+W].b - img.data[idx].b));
         }
     }
 
-    // Compute the derivatives of the horizontal and vertical domain transforms.
-    float s = sigma_s/sigma_r;
-    for (uint i=0; i<H*W; i++)
+    dIdx.data[(H-1)*W] = 1.0f;
+    for (uint j=0; j<W-1; j++)
     {
-        dIdx.data[i] = 1.0f + s*dIdx.data[i];
-        dIdy.data[i] = 1.0f + s*dIdy.data[i];
+        uint idx = (H-1)*W + j;
+        dIdx.data[idx+1] = 1.0f +
+                           s*(fabs(img.data[idx+1].r - img.data[idx].r) +
+                              fabs(img.data[idx+1].g - img.data[idx].g) +
+                              fabs(img.data[idx+1].b - img.data[idx].b));
     }
+
+    for (uint i=0; i<H-1; i++)
+    {
+        uint idx = i*W + (W-1);
+        dIdy.data[idx+W] = 1.0f +
+                           s*(fabs(img.data[idx+W].r - img.data[idx].r) +
+                              fabs(img.data[idx+W].g - img.data[idx].g) +
+                              fabs(img.data[idx+W].b - img.data[idx].b));
+    }
+
+
     FP_CALL_END(FunP::ID_domainTransform);
 
     Mat2<float> dIdyT(H,W);
