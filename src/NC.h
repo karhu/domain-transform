@@ -2,98 +2,95 @@
 #define NC_H
 
 #include "common.h"
+#include <cstring>
+
 namespace NC
 {
 
-/**
- * Computes a row-wise exclusive Summed Area Table of the Input.
- * This means entry i contains the sum of entries 0 to i-1.
- * The outSAT matrix is assumed to be of size (W+1,H).
- **/
-void computeRowSAT(const Mat2<float3>& input, Mat2<float3>& outSAT)
-{
-    FP_CALL_START(FunP::ID_computeRowSAT);
-
-    assert(input.width+1 == outSAT.width);
-    assert(input.height == outSAT.height);
-
-    const uint W = input.width;
-    const uint H = input.height;
-
-    for (uint i=0; i<H; i++)
-    {
-        float3 sum;
-        sum.r = sum.g = sum.b = 0;
-        for (uint j=0; j<W; j++)
-        {
-            uint idxIMG = i*W + j;
-            uint idxSAT = i*(W+1)+j;
-
-            // store current sum
-            outSAT.data[idxSAT].r = sum.r;
-            outSAT.data[idxSAT].g = sum.g;
-            outSAT.data[idxSAT].b = sum.b;
-
-            // increase sum
-            sum.r += input.data[idxIMG].r;
-            sum.g += input.data[idxIMG].g;
-            sum.b += input.data[idxIMG].b;
-        }
-        // store complete sum
-        uint idxSAT = i*(W+1)+W;
-        outSAT.data[idxSAT].r = sum.r;
-        outSAT.data[idxSAT].g = sum.g;
-        outSAT.data[idxSAT].b = sum.b;
-    }
-
-    FP_CALL_END(FunP::ID_computeRowSAT);
-}
-
 void TransformedDomainBoxFilter(Mat2<float3>& img,
-                                Mat2<float3>& sat,
                                 Mat2<float> dIdx, float boxR)
 {
-    assert(img.width+1 == sat.width);
-    assert(img.height == sat.height);
-
-    computeRowSAT(img,sat);
-
     FP_CALL_START(FunP::ID_boxFilter);
 
     const uint W = img.width;
     const uint H = img.height;
 
+    std::vector<float3> imgRow(W);
+    std::vector<float3> imgRow1(W);
+
     for (uint i=0; i<H; i++)
     {
+        uint i1 = i+1;
+
         uint posL = 0;
         uint posR = 0;
+
+        uint posL1 = 0;
+        uint posR1 = 0;
+
+        memcpy(&imgRow[0],&img.data[i*W],sizeof(float3)*W);
+        memcpy(&imgRow1[0],&img.data[i1*W],sizeof(float3)*W);
+
+        // row sat
+        float3 sum; sum.r = sum.g = sum.b = 0;
+        float3 sum1; sum1.r = sum1.g = sum1.b = 0;
+
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
+            uint idx1 = i1*W +j;
 
             // compute box filter bounds
             float dtL = dIdx.data[idx] - boxR;
             float dtR = dIdx.data[idx] + boxR;
 
+            float dtL1 = dIdx.data[idx1] - boxR;
+            float dtR1 = dIdx.data[idx1] + boxR;
+
+            // update box filter window
             while (dIdx.data[i*W+posL] < dtL && posL < W-1)
             {
+                sum.r -= imgRow[posL].r;
+                sum.g -= imgRow[posL].g;
+                sum.b -= imgRow[posL].b;
                 posL++;
             }
             while (posR < W && dIdx.data[i*W+posR] < dtR )  // attention, allows for index = W
             {
+                sum.r += imgRow[posR].r;
+                sum.g += imgRow[posR].g;
+                sum.b += imgRow[posR].b;
                 posR++;
             }
 
-            // compute box filter value
-            uint lIdx = posL + i*(W+1);
-            uint uIdx = posR + i*(W+1);
+            while (dIdx.data[i1*W+posL1] < dtL1 && posL1 < W-1)
+            {
+                sum1.r -= imgRow1[posL1].r;
+                sum1.g -= imgRow1[posL1].g;
+                sum1.b -= imgRow1[posL1].b;
+                posL1++;
+            }
+            while (posR1 < W && dIdx.data[i1*W+posR1] < dtR1 )  // attention, allows for index = W
+            {
+                sum1.r += imgRow1[posR1].r;
+                sum1.g += imgRow1[posR1].g;
+                sum1.b += imgRow1[posR1].b;
+                posR1++;
+            }
 
-            // TODO: mult vs. div?
-            int delta = uIdx - lIdx;
+            int delta = posR - posL;
+            float invD = 1.0f / delta;
 
-            img.data[idx].r = (sat.data[uIdx].r - sat.data[lIdx].r) / delta;
-            img.data[idx].g = (sat.data[uIdx].g - sat.data[lIdx].g) / delta;
-            img.data[idx].b = (sat.data[uIdx].b - sat.data[lIdx].b) / delta;
+            int delta1 = posR1 - posL1;
+            float invD1 = 1.0f / delta1;
+
+            img.data[idx].r = sum.r * invD;
+            img.data[idx].g = sum.g * invD;
+            img.data[idx].b = sum.b * invD;
+
+            img.data[idx].r = sum.r * invD1;
+            img.data[idx].g = sum.g * invD1;
+            img.data[idx].b = sum.b * invD1;
         }
     }
 
@@ -167,9 +164,6 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     transposeB(dIdy,dIdyT);
     cumsumX(dIdyT);
 
-    Mat2<float3> satX(img.width+1,img.height);
-    Mat2<float3> satY(img.height+1,img.width);
-
     Mat2<float3> imgT(img.height,img.width);
 
     for(uint i=0; i<nIterations; i++)
@@ -180,10 +174,10 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
         // Compute the radius of the box filter with the desired variance.
         float boxR = sqrt(3) * sigmaHi;
 
-        TransformedDomainBoxFilter(img, satX, dIdx, boxR);
+        TransformedDomainBoxFilter(img, dIdx, boxR);
         transposeB(img,imgT);
 
-        TransformedDomainBoxFilter(imgT,satY,dIdyT,boxR);
+        TransformedDomainBoxFilter(imgT,dIdyT,boxR);
         transposeB(imgT,img);
     }
 
@@ -192,9 +186,6 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
     dIdx.free();
     dIdy.free();
     dIdyT.free();
-
-    satX.free();
-    satY.free();
 
     imgT.free();
 
