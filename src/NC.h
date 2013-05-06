@@ -8,6 +8,7 @@ namespace NC
 {
 
 void TransformedDomainBoxFilter(Mat2<float3>& img,
+                                Mat2<float3>& imgOut,
                                 Mat2<float> dIdx, float boxR)
 {
     FP_CALL_START(FunP::ID_boxFilter);
@@ -15,14 +16,10 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
     const uint W = img.width;
     const uint H = img.height;
 
-    std::vector<float3> imgRow(W);
-
     for (uint i=0; i<H; i++)
     {
         uint posL = 0;
         uint posR = 0;
-
-        memcpy(&imgRow[0],&img.data[i*W],sizeof(float3)*W);
 
         // row sat
         float3 sum; sum.r = sum.g = sum.b = 0;
@@ -30,6 +27,7 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
+            uint idxT = j*H + i;
 
             // compute box filter bounds
             float dtL = dIdx.data[idx] - boxR;
@@ -38,25 +36,25 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
             // update box filter window
             while (dIdx.data[i*W+posL] < dtL && posL < W-1)
             {
-                sum.r -= imgRow[posL].r;
-                sum.g -= imgRow[posL].g;
-                sum.b -= imgRow[posL].b;
+                sum.r -= img.data[i*W+posL].r;
+                sum.g -= img.data[i*W+posL].g;
+                sum.b -= img.data[i*W+posL].b;
                 posL++;
             }
             while (posR < W && dIdx.data[i*W+posR] < dtR )  // attention, allows for index = W
             {
-                sum.r += imgRow[posR].r;
-                sum.g += imgRow[posR].g;
-                sum.b += imgRow[posR].b;
+                sum.r += img.data[i*W+posR].r;
+                sum.g += img.data[i*W+posR].g;
+                sum.b += img.data[i*W+posR].b;
                 posR++;
             }
 
             int delta = posR - posL;
             float invD = 1.0f / delta;
 
-            img.data[idx].r = sum.r * invD;
-            img.data[idx].g = sum.g * invD;
-            img.data[idx].b = sum.b * invD;
+            imgOut.data[idxT].r = sum.r * invD;
+            imgOut.data[idxT].g = sum.g * invD;
+            imgOut.data[idxT].b = sum.b * invD;
         }
     }
 
@@ -140,11 +138,11 @@ void filter(Mat2<float3>& img, float sigma_s, float sigma_r, uint nIterations)
         // Compute the radius of the box filter with the desired variance.
         float boxR = sqrt(3) * sigmaHi;
 
-        TransformedDomainBoxFilter(img, dIdx, boxR);
-        transposeB(img,imgT);
+        TransformedDomainBoxFilter(img,imgT, dIdx, boxR);
+//        transposeB(img,imgT);
 
-        TransformedDomainBoxFilter(imgT,dIdyT,boxR);
-        transposeB(imgT,img);
+        TransformedDomainBoxFilter(imgT,img,dIdyT,boxR);
+//        transposeB(imgT,img);
     }
 
 
