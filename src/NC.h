@@ -16,36 +16,24 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
     const uint H = img.height;
 
     std::vector<float3> imgRow(W);
-    std::vector<float3> imgRow1(W);
 
     for (uint i=0; i<H; i++)
     {
-        uint i1 = i+1;
-
         uint posL = 0;
         uint posR = 0;
 
-        uint posL1 = 0;
-        uint posR1 = 0;
-
         memcpy(&imgRow[0],&img.data[i*W],sizeof(float3)*W);
-        memcpy(&imgRow1[0],&img.data[i1*W],sizeof(float3)*W);
 
         // row sat
         float3 sum; sum.r = sum.g = sum.b = 0;
-        float3 sum1; sum1.r = sum1.g = sum1.b = 0;
 
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
-            uint idx1 = i1*W +j;
 
             // compute box filter bounds
             float dtL = dIdx.data[idx] - boxR;
             float dtR = dIdx.data[idx] + boxR;
-
-            float dtL1 = dIdx.data[idx1] - boxR;
-            float dtR1 = dIdx.data[idx1] + boxR;
 
             // update box filter window
             while (dIdx.data[i*W+posL] < dtL && posL < W-1)
@@ -63,34 +51,12 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
                 posR++;
             }
 
-            while (dIdx.data[i1*W+posL1] < dtL1 && posL1 < W-1)
-            {
-                sum1.r -= imgRow1[posL1].r;
-                sum1.g -= imgRow1[posL1].g;
-                sum1.b -= imgRow1[posL1].b;
-                posL1++;
-            }
-            while (posR1 < W && dIdx.data[i1*W+posR1] < dtR1 )  // attention, allows for index = W
-            {
-                sum1.r += imgRow1[posR1].r;
-                sum1.g += imgRow1[posR1].g;
-                sum1.b += imgRow1[posR1].b;
-                posR1++;
-            }
-
             int delta = posR - posL;
             float invD = 1.0f / delta;
-
-            int delta1 = posR1 - posL1;
-            float invD1 = 1.0f / delta1;
 
             img.data[idx].r = sum.r * invD;
             img.data[idx].g = sum.g * invD;
             img.data[idx].b = sum.b * invD;
-
-            img.data[idx].r = sum.r * invD1;
-            img.data[idx].g = sum.g * invD1;
-            img.data[idx].b = sum.b * invD1;
         }
     }
 
