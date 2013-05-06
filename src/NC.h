@@ -53,8 +53,8 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
                                 Mat2<float3>& sat,
                                 Mat2<float> dIdx, float boxR)
 {
-    assert(img.width == imgOut.width);
-    assert(img.height == imgOut.height);
+    assert(img.width == sat.width);
+    assert(img.height == sat.height);
 
 //    computeRowSAT(img,sat);
 
