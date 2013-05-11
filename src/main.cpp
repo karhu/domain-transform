@@ -2,7 +2,6 @@
 
 #include "tclap/CmdLine.h"
 #include "Image.h"
-#include "mainwindow.h"
 #include "rdtsc.h"
 
 #include "FunctionProfiling.h"

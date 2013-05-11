@@ -71,11 +71,12 @@ namespace FunP
         double total = Data[0].total_cycles / 100.0;
         for (int i=0; i<N_DATA_LINES; i++)
         {
+            double cycles_call = Data[i].call_counter == 0 ? 0.0 : Data[i].total_cycles / Data[i].call_counter;
             std::cout << "{" << std::endl;
             std::cout << "'data':        '" << Data[i].name << "',\n";
             std::cout << "'calls':        " << Data[i].call_counter << ",\n";
             std::cout << "'total_cycles': " << Data[i].total_cycles << ",\n";
-            std::cout << "'cycles_call':  " << Data[i].total_cycles / Data[i].call_counter << ",\n";
+            std::cout << "'cycles_call':  " << cycles_call << ",\n";
             std::cout << "'percentage':   " << Data[i].total_cycles / total << "\n";
             std::cout << "}," << std::endl;
         }
