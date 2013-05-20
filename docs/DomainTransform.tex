@@ -1,6 +1,6 @@
 \documentclass[11pt,a4paper]{article}
 \title{How To Write Fast Numerical Code\\ Course Project}
-\author{Julia Pe\v{c}erska, student number 12-947-396 \\ Adrian Blumer, student number xx-xxx-xxx \\ Pascal Sp\"{o}rri, student number xx-xxx-xxx}
+\author{Julia Pe\v{c}erska, student number 12-947-396 \\ Adrian Blumer, student number 08-911-265 \\ Pascal Sp\"{o}rri, student number 06-921-027}
 \date{10.04.2013}
 \usepackage[compact,explicit]{titlesec}
 \usepackage{graphicx}
@@ -13,6 +13,7 @@
 \usepackage{multirow}
 
 \newcommand{\todo}[1]{\vskip 5mm\noindent{\bf TODO}: {\it #1}}
+\newcommand{\comment}[1]{}
 
 \begin{document}
 %\titleformat{\section}{\large\bfseries}%{}{0pt}%{\thesection}%{Exercise \thesection \}
@@ -23,9 +24,9 @@ In the Table~\ref{tab:cost_an} below are included all of the operations used in 
 
 The following variables are used in Table~\ref{tab:cost_an}: $W$ - width of the processed image, $H$ - height of the processed image, $N$ - number of filtering iterations.
 
-
+\comment{
 \begin{table}[h]
-\label{tab:cost_an}
+\label{tab:cost_an_old}
 \centering
 \begin{tabular}{| l | l | l |} \hline 
 Operation & Recursive filtering & Normalized convolution \\ \hline
@@ -37,6 +38,45 @@ fabs & $6 W H$ & $6 W H$ \\ \hline
 sqrt & $4 N$ & $3 N$ \\ \hline
 powf & $2 N W H + 2 N$ & $2 N$ \\ \hline
 exp & $2 N$ & $0$ \\ \hline
+\end{tabular}
+\caption{Floating point operations performed in the code}
+\end{table}
+}
+
+\comment{
+\begin{table}[h]
+\label{tab:cost_an2}
+\centering
+\begin{tabular}{| l | l | l | l |} \hline 
+Operation & filter & TDBF & CumSum \\ \hline
+add & $12HW - 6H - 6W$ & $2*N*8HW$ & $2*HW$ \\ \hline
+multiply & $2HW - H - W + 3N$ & $2*N*3HW$ & $0$ \\ \hline
+divide & $N + 1$ & $2*N*HW$ & $0$ \\ \hline
+fabs & $6HW - 3H - 3W$ & $0$ & $0$ \\ \hline
+sqrt & $3N$ & $0$ & $0$ \\ \hline
+powf & $2N$ & $0$ & $0$ \\ \hline
+\end{tabular}
+\caption{Floating point operations performed in the code}
+\end{table}
+}
+
+
+\begin{table}[h]
+\label{tab:cost_an}
+\centering
+\begin{tabular}{| l | l | l | l | l |} \hline 
+Operation & filter & TDBF & CumSum & all \\ \hline
+add & $6HW$ & $2*N*4HW$ & $2HW$ & $(8 + 16N)HW$ \\ \hline
+sub & $6HW$ & $2*N*4HW$ & $0$ & $(6 + 16N)HW$ \\ \hline
+compare & $0$ & $2*N*4HW$ & $0$ & $(8N)HW$ \\ \hline
+multiply & $2HW + 3N$ & $2*N*3HW$ & $0$ & $(2 + 6N)HW + 3N$ \\ \hline
+divide & $N + 1$ & $2*N*HW$ & $0$ & $(2*HW + 1)N + 1$ \\ \hline
+fabs & $6HW$ & $0$ & $0$ & $6HW$ \\ \hline
+sqrt & $3N$ & $0$ & $0$ & $3N$ \\ \hline
+powf & $2N$ & $0$ & $0$ & $2N$ \\ \hline \hline
+
+addlike & $12HW$ & $2*N*12HW$ & $2HW$ & $(14 + 24N)HW$ \\ \hline
+
 \end{tabular}
 \caption{Floating point operations performed in the code}
 \end{table}
