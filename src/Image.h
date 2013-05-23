@@ -45,9 +45,9 @@ Mat2<float3> LoadPNG(const std::string& path)
     float3* d = mat.data;
     for (ulong i=0; i<nx*ny; i++)
     {
-        d[i].r = img_r[i]*255.0;
-        d[i].g = img_g[i]*255.0;
-        d[i].b = img_b[i]*255.0;
+        d[i].r = img_r[i]*1000.0;
+        d[i].g = img_g[i]*1000.0;
+        d[i].b = img_b[i]*1000.0;
     }
 
     c_free(img);
@@ -69,9 +69,9 @@ void SavePNG(const std::string& path, Mat2<float3> mat)
 
     for (ulong i=0; i<mat.width*mat.height; i++)
     {
-        tmp_r[i] = mat.data[i].r/255.0;
-        tmp_g[i] = mat.data[i].g/255.0;
-        tmp_b[i] = mat.data[i].b/255.0;
+        tmp_r[i] = mat.data[i].r/1000.0;
+        tmp_g[i] = mat.data[i].g/1000.0;
+        tmp_b[i] = mat.data[i].b/1000.0;
     }
 
     io_png_write_flt(path.c_str(), tmp, mat.width, mat.height, 3);
