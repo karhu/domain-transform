@@ -12,6 +12,11 @@
 //    float r,g,b;
 //} __attribute__((aligned (16)));
 
+struct double3{
+    double r,g,b;
+};
+
+
 struct float3{
     float r,g,b;
 };
