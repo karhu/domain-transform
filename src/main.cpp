@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     uint nIterations;
     float sigmaS;
     float sigmaR;
-
+    float sigmaR_orig;
     bool benchmark;
     bool benchmarkWarmUp;
     uint benchmarkIterations;
@@ -73,7 +73,8 @@ int main(int argc, char** argv)
         methodStringShort = methodArg.getValue();
         nIterations = iterationsArg.getValue();
         sigmaS = sigmaSArg.getValue();
-        sigmaR = sigmaRArg.getValue();
+        sigmaR_orig = sigmaRArg.getValue();
+        sigmaR = sigmaR_orig*255.0;
 
         benchmark = benchmarkSwitch.getValue();
         benchmarkIterations = benchmarkIterationsArg.getValue();
@@ -190,7 +191,7 @@ int main(int argc, char** argv)
     cout << ", 'height':       " << img.height << std::endl;
     cout << ", 'iterations':   " << nIterations<< std::endl;
     cout << ", 'sigma_s':      " << sigmaS<< std::endl;
-    cout << ", 'sigma_r':      " << sigmaR<< std::endl;
+    cout << ", 'sigma_r':      " << sigmaR_orig<< std::endl;
     cout << ", 'cycles':       " << cycles<< std::endl;
     cout << ", 'total_cycles': " << total_cycles<< std::endl;
     cout << ", 'benchmark_iterations': " << benchmarkIterations<< std::endl;
