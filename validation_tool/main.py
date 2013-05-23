@@ -30,7 +30,7 @@ test_arguments = {
 
 reference_argument = 'ref'
 
-test_binary = "../build/build/DomainTransform"
+test_binary = "../build/DomainTransform"
 reference_binary = test_binary
 
 
