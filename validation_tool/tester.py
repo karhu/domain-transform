@@ -3,7 +3,7 @@ import os
 import math
 from PIL import Image
 
-REQUIRED_ACCURACY = 1e-3
+REQUIRED_ACCURACY = 2
 class ImageSizeDoesntMatchException(Exception):
     pass
 class ImagesDontMatchException(Exception):
