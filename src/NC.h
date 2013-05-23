@@ -30,7 +30,7 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
         uint posR = 0;
 
         // row sat
-        double3 sum; sum.r = sum.g = sum.b = 0;
+        float3 sum; sum.r = sum.g = sum.b = 0;
 
         for (uint j=0; j<W; j++)
         {
