@@ -8,13 +8,18 @@
 //  __m128 s_for_alignment;
 //};
 
-struct float3{
-    float r,g,b;
-} __attribute__((aligned (16)));
-
 //struct float3{
 //    float r,g,b;
-//};
+//} __attribute__((aligned (16)));
+
+struct double3{
+    double r,g,b;
+};
+
+
+struct float3{
+    float r,g,b;
+};
 
 struct uchar3{
     uchar r,g,b;
