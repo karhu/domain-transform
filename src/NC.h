@@ -67,9 +67,9 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
                 invD = 1.0f / delta;
             }
 
-            imgOut.data[idxT].r = (sum.r * invD);
-            imgOut.data[idxT].g = (sum.g * invD);
-            imgOut.data[idxT].b = (sum.b * invD);
+            imgOut.data[idxT].r = sum.r * invD;
+            imgOut.data[idxT].g = sum.g * invD;
+            imgOut.data[idxT].b = sum.b * invD;
         }
     }
 
