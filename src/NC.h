@@ -24,8 +24,6 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
     const uint W = img.width;
     const uint H = img.height;
 
-    std::vector<float3> tmpSAT(W+1);
-
     for (uint i=0; i<H; i++)
     {
         uint posL = 0;
@@ -33,29 +31,6 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
 
         // row sat
         float3 sum; sum.r = sum.g = sum.b = 0;
-        // From merged version
-//<<<<<<< HEAD
-//        for (uint j=0; j<W; j++)
-//        {
-//            uint idxIMG = i*W + j;
-//            uint idxSAT = j;
-
-//            // store current sum
-//            tmpSAT[idxSAT].r = sum.r;
-//            tmpSAT[idxSAT].g = sum.g;
-//            tmpSAT[idxSAT].b = sum.b;
-
-//            // increase sum
-//            sum.r += img.data[idxIMG].r;
-//            sum.g += img.data[idxIMG].g;
-//            sum.b += img.data[idxIMG].b;
-//        }
-//        // store complete sum
-//        tmpSAT[W].r = sum.r;
-//        tmpSAT[W].g = sum.g;
-//        tmpSAT[W].b = sum.b;
-//=======
-//>>>>>>> recombination
 
         for (uint j=0; j<W; j++)
         {
@@ -67,41 +42,22 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
             float dtR = dIdx.data[idx] + boxR;
 
             // update box filter window
-            if (posL < W-1)
-            while (dIdx.data[i*W+posL] < dtL)
+            while (posL < W-1 && dIdx.data[i*W+posL] < dtL)
             {
                 sum.r -= img.data[i*W+posL].r;
                 sum.g -= img.data[i*W+posL].g;
                 sum.b -= img.data[i*W+posL].b;
                 posL++;
-                if (posL >= W-1)
-                    break;
             }
 
-            if (posR < W)
-            while (dIdx.data[i*W+posR] < dtR )  // attention, allows for index = W
+            while (posR < W && dIdx.data[i*W+posR] < dtR )  // attention, allows for index = W
             {
                 sum.r += img.data[i*W+posR].r;
                 sum.g += img.data[i*W+posR].g;
                 sum.b += img.data[i*W+posR].b;
                 posR++;
-                if (posR >= W)
-                    break;
             }
 
-            // From Master branch
-//<<<<<<< HEAD
-//            // compute box filter value
-//            uint lIdx = posL;
-//            uint uIdx = posR;
-
-//            // TODO: mult vs. div?
-//            int delta = uIdx - lIdx;
-
-//            img.data[idx].r = (tmpSAT[uIdx].r - tmpSAT[lIdx].r) / delta;
-//            img.data[idx].g = (tmpSAT[uIdx].g - tmpSAT[lIdx].g) / delta;
-//            img.data[idx].b = (tmpSAT[uIdx].b - tmpSAT[lIdx].b) / delta;
-//=======
             int delta = posR - posL;
             float invD;
             if (delta <= (MAX_DIV_VALUE_CHOSEN)) {
