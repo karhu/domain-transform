@@ -31,12 +31,14 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
         uint posR = 0;
 
         // row sat
-        float3 sum; sum.r = sum.g = sum.b = 0;
-        __m256 sum256 = _mm256_setzero_ps();
+//        float3 sum; sum.r = sum.g = sum.b = 0;
+        float3 sum;
+        sum.mmvalue = _mm_setzero_ps();
         for (uint j=0; j<W; j++)
         {
             uint idx = i*W + j;
             uint idxT = j*H + i;
+            __m256 sum256 = _mm256_setzero_ps();
 
             // compute box filter bounds
             float dtL = dIdx.data[idx] - boxR;
@@ -51,7 +53,7 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
                 if (posL+1 < W-1 && dIdx.data[i*W+posL+1] < dtL && (((long)&(img.data[i*W+posL]))%32 == 0))
                 {
                     __m256 ml = _mm256_load_ps((float*) &(img.data[i*W+posL]));
-                    sum256 = _mm256_sub_ps(ml, sum256);
+                    sum256 = _mm256_sub_ps(sum256, ml);
                     posL+=2;
                 }
                 else
@@ -69,14 +71,13 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
                 if (posR+1 < W && dIdx.data[i*W+posR+1] < dtR && (((long)&(img.data[i*W+posR]))%32 == 0))
                 {
                     __m256 ml = _mm256_load_ps((float*) &(img.data[i*W+posR]));
-                    sum256 = _mm256_add_ps(ml, sum256);
+                    sum256 = _mm256_add_ps(sum256, ml);
                     posR+=2;
                 }
                 else
                 {
                     sum.mmvalue = _mm_add_ps(sum.mmvalue, img.data[i*W+posR].mmvalue);
                     posR++;
-                    break;
                 }
             }
 
