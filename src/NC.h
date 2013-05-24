@@ -43,20 +43,26 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
 
             // update box filter window
             int posLOffset = 0;
-            while (posL < W-1 && dIdx.data[i*W+posL] < dtL)
+            if (posL < W-1)
+            while (dIdx.data[i*W+posL] < dtL)
             {
                 sum.r -= img.data[i*W+posL].r;
                 sum.g -= img.data[i*W+posL].g;
                 sum.b -= img.data[i*W+posL].b;
                 posL++;
+                if (posL >= W-1)
+                    break;
             }
 
-            while (posR < W && dIdx.data[i*W+posR] < dtR )  // attention, allows for index = W
+            if (posR < W)
+            while (dIdx.data[i*W+posR] < dtR )  // attention, allows for index = W
             {
                 sum.r += img.data[i*W+posR].r;
                 sum.g += img.data[i*W+posR].g;
                 sum.b += img.data[i*W+posR].b;
                 posR++;
+                if (posR >= W)
+                    break;
             }
 
             int delta = posR - posL;
