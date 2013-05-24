@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         nIterations = iterationsArg.getValue();
         sigmaS = sigmaSArg.getValue();
         sigmaR_orig = sigmaRArg.getValue();
-        sigmaR = sigmaR_orig*1000.0;
+        sigmaR = sigmaR_orig;
 
         benchmark = benchmarkSwitch.getValue();
         benchmarkIterations = benchmarkIterationsArg.getValue();
