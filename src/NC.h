@@ -42,17 +42,21 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
             // update box filter window
             while (posL < W-1 && dIdx.data[i*W+posL] < dtL)
             {
-                sum.r -= img.data[i*W+posL].r;
-                sum.g -= img.data[i*W+posL].g;
-                sum.b -= img.data[i*W+posL].b;
+//                sum.r -= img.data[i*W+posL].r;
+//                sum.g -= img.data[i*W+posL].g;
+//                sum.b -= img.data[i*W+posL].b;
+                sum.mmvalue = _mm_sub_ps(sum.mmvalue, img.data[i*W+posL].mmvalue);
+
                 posL++;
             }
 
             while (posR < W && dIdx.data[i*W+posR] < dtR )  // attention, allows for index = W
             {
-                sum.r += img.data[i*W+posR].r;
-                sum.g += img.data[i*W+posR].g;
-                sum.b += img.data[i*W+posR].b;
+//                sum.r += img.data[i*W+posR].r;
+//                sum.g += img.data[i*W+posR].g;
+//                sum.b += img.data[i*W+posR].b;
+                sum.mmvalue = _mm_add_ps(sum.mmvalue, img.data[i*W+posR].mmvalue);
+
                 posR++;
             }
 
@@ -65,9 +69,11 @@ void TransformedDomainBoxFilter(Mat2<float3>& img,
                 invD = 1.0f / delta;
             }
 
-            imgOut.data[idxT].r = sum.r * invD;
-            imgOut.data[idxT].g = sum.g * invD;
-            imgOut.data[idxT].b = sum.b * invD;
+//            imgOut.data[idxT].r = sum.r * invD;
+//            imgOut.data[idxT].g = sum.g * invD;
+//            imgOut.data[idxT].b = sum.b * invD;
+            imgOut.data[idxT].mmvalue = _mm_mul_ps(sum.mmvalue,_mm_set1_ps(invD));
+
         }
     }
 

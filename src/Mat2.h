@@ -3,22 +3,23 @@
 
 #include <xmmintrin.h>
 
-//union float3{
-//  struct{ float r,g,b,a; };
-//  __m128 s_for_alignment;
-//};
 
 //struct float3{
 //    float r,g,b;
 //} __attribute__((aligned (16)));
 
-struct double3{
-    double r,g,b;
-};
+//struct double3{
+//    double r,g,b;
+//};
 
 
-struct float3{
-    float r,g,b;
+//struct float3{
+//    float r,g,b;
+//};
+
+union float3{
+  struct{ float r,g,b,a; };
+  __m128 mmvalue;
 };
 
 struct uchar3{
