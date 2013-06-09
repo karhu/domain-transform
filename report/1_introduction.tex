@@ -1,5 +1,45 @@
 \section{Introduction}\label{sec:intro}
-\fixme{Write.}
+\fixme{Review}
+
+Filtering operations are often a crucial step of image processing. In
+particular, most useful filter options are edge-aware smoothing filters, 
+whose output can be used as a building block for multiple other applications.
+For example, such filters can be used to extract or remove features from an
+image, to colorize the image in a intuitive fashion by colouring specific
+items on an image, as well as perform other tasks such as noise removal and
+image compression.
+
+As in most cases with image (and in particular with video) processing, it is
+highly required that the filters have a low computational cost and therefore
+can produce fast results, especially when used for real-time transformation of
+graphical data. It is also true that image recording technologies advance and 
+therefore can create images of greater resolution, which means an increase in
+the amount of computation needed for filtering. And lastly images are 2D data
+and will have to be processed both horizontally and vertically, which makes
+spatial locality troublecome.
+
+There exist multiple algorithms that perform this type of filtering, however
+most of these are computationally heavy and almost impossible to execute in
+real-time. Moreover, some of those only naturally support grayscale images. \fixme{should we add references here?}
+For this project we have picked one of the fastest known algorithms for the
+task in question, which works on full RGB images.
+
+The main idea of this fast approach is to use a domain transformation on the
+image which allows to reduce the dimensionality of the data. An RGB image in
+essence is a 2D manifold in 5D space, and an edge-preserving filter can be
+defined in lower dimensions as long as the 5D distances among the pixels are
+preserved. The transformation defines an isometry between curves on the 2D
+manifold and the real line. It preserves the geodesic distance between points
+on the curve wrapping the image into two 1D domains, one for horizontal 
+distances and one for vertical. Then a 1D edge-preserving filter can be ran on
+this transformed domain.
+
+The work presented here aims at optimizing the implementation of on of the 
+more sophisticated algorithm versions on the CPU. The only publicly available
+implementation of it is in MATLAB, and is useless for fast prosessing of image
+data. We have implemented the algorith in C/C++ and proceeded to use the
+techniques described in the course to improve its performance.
+
 \comment{Do not start the introduction with the abstract or a slightly modified
 version. It follows a possible structure of the introduction. 
 Note that the structure can be modified, but the
