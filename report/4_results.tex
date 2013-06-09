@@ -1,0 +1,28 @@
+\section{Experimental Results}\label{sec:exp}
+\fixme{Write.}
+\comment{
+Here you evaluate your work using experiments. You start again with a
+very short summary of the section. The typical structure follows.
+
+\mypar{Experimental setup} Specify the platform (processor, frequency, cache sizes)
+as well as the compiler, version, and flags used. I strongly recommend that you play with optimization flags and consider also icc for additional potential speedup.
+
+Then explain what input you used and what range of sizes. The idea is to give enough information so the experiments are reproducible by somebody else on his or her code.
+
+\mypar{Results}
+Next divide the experiments into classes, one paragraph for each. In the simplest case you have one plot that has the size on the x-axis and the performance on the y-axis. The plot will contain several lines, one for each relevant code version. Discuss the plot and extract the overall performance gain from baseline to best code. Also state the percentage of peak performance for the best code. Note that the peak may change depending on the situation. For example, if you only do additions it would be 12 Gflop/s
+on one core with 3 Ghz and SSE and single precision floating point.
+
+Do not put two performance lines into the same plot if the operations count changed significantly (that's apples and oranges). In that case first perform the optimizations that reduce op count and report the runtime gain in a plot. Then continue to optimize the best version and show performance plots.
+
+{\bf You should}
+\begin{itemize}
+\item Follow the guide to benchmarking presented in class, in particular
+\item very readable, attractive plots (do 1 column, not 2 column plots
+for this class), proper readable font size. An example is below (of course you can have a different style),
+\item every plot answers a question, which you pose and extract the
+answer from the plot in its discussion
+\end{itemize}
+Every plot should be discussed (what does it show, which statements do
+you extract).
+}
