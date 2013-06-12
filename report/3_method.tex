@@ -39,6 +39,24 @@ void boxfilter(img, bounds) {
     }
 }
 \end{lstlisting}
+\subsection{Blocked transpose}
+With benchmarking the initial version we recognised that the transpose function was responsible for most of our computation time. Hence we blocked the transpose (listing \ref{code:blocked_transpose}).
+\begin{lstlisting}[caption=Transpose block, label=code:blocked_transpose]
+for (yo=0; yo<Hmod; yo+=BLOCK)
+  for (xo=0; xo<Wmod; xo+=BLOCK)
+    for (uint y=yo; y<yo+BLOCK; y++)
+      for (uint x=xo; x<xo+BLOCK; x++)
+        uint idx = y*W + x;
+        uint idxT = x*H + y;
+        out.data[idxT] = in.data[idx];
+    xo = Wmod;
+    for (uint y=yo; y<yo+BLOCK; y++)
+      for (uint x=xo; x<W; x++)
+        uint idx = y*W + x;
+        uint idxT = x*H + y;
+        out.data[idxT] = in.data[idx];
+// Handle bottom row and bottom rightmost block
+\end{lstlisting}
 
 
 
