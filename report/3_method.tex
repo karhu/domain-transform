@@ -59,6 +59,28 @@ for (yo=0; yo<Hmod; yo+=BLOCK)
 \end{lstlisting}
 
 
+\subsection{Failed optimization attempts}
+
+\fixme{Rewrite}
+\subsubsection{Precomputation} Division precomputation did not make any difference.
+
+\subsubsection{Changing floats to \dots}
+
+\fixme{Write}
+
+\subsubsection{Blocking}
+
+We tried to block the computation for spatial locality for the output matrix which didn't give any improvement (actually made it worse).
+
+\subsubsection{Instruction interleaving}
+
+We tried to combine the while loops that compute the borders for the filter, so that independent computation would fill the pipeline. This did not give any performance improvement, perhaps because of the fact that the combined loop still had a conditional statement for both filter borders which we cannot eradicate.
+
+\subsubsection{Reshuffling of data}
+
+Most of the versions we implemented work on the interleaved colour arrays, storing colours as $rgbrgb\dots$. We attempted to reshuffle the data to three separate arrays, each containing one colour, which didn't bring any performance improvement. 
+
+We transpose 3 different arrays which is slow. Or we might write transposed, but then we'd access 3 arrays at a stride which would mess the cache up anyway.
 
 %\\
 %\fixme{Write.}
