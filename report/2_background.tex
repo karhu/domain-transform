@@ -9,7 +9,7 @@ The straight forward approach to image bluring is to compute a new value for eac
 In general this increases the dimensionality of the problem by adding a dimension for each color channel.
 
 For a RGB color image this would lead to a 5-dimensional space (3 radiometric + 2 spatial dimensions). The domain transform method reduces this dimensionality as follows:
-First, it threads the two spatial dimensions separately. What this means is that the images is separately filtered along its rows and columns. Secondly, it merges the three radiometric dimensions and the remaining one spatial dimension into the one-dimensional space of the domain transform, that still retains the necessary distance properties from the original space.
+First, it treats the two spatial dimensions separately. What this means is that the image is separately filtered along its rows and columns. Secondly, it merges the three radiometric dimensions and the remaining one spatial dimension into the one-dimensional space of the domain transform. This transformation retains the necessary distance properties from the original space.
 
 
 \mypar{Cost Analysis}
