@@ -11,11 +11,39 @@ struct Mat2
 };
 \end{lstlisting}
 In order to preserve accuracy all images are stored in a \lstinline{float3} struct. Which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
-The algorithm starts by precomputing the differential of the image in both $x$ and $y$ directi
+The algorithm starts by precomputing $dIdx$ and $dIdy$ the differential of the image in both $x$ and $y$ direction. Then the prefix sum of both $dIdx$ and $dIdY^T$ is compute. 
+During the filtering step we (listing \ref{code:filterstep}) compute \lstinline{computeBound} and \lstinline{boxFilter} twice. For each iteration step we transpose the images.
+\begin{lstlisting}[caption=Filterstep,label=code:filterstep]
+for (i=0; i<iterations; i++) {
+    bounds = computeBound(img, dIdX, r);
+    img = boxFilter(img, bounds);
+    img = transpose(img);
+    bounds = computeBound(img, dIdY, r);
+    img = boxFilter(img, dIdY, bounds);
+    img = transpose(img);
+}
+\end{lstlisting}
+The \lstinline{computeBound} step computes the one dimensional bound for each pixel for the box filter step. The bound is dependant on a user defined radius $r$. 
+During the box filter step the prefix sum of the image in the $x$ direction is precomputed with a separate function. During the box filter step the box filter makes use of the previously precomputed prefix sum and bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
+\begin{lstlisting}[caption=Boxfilter step, label=code:boxfilter]
+void boxfilter(img, bounds) {
+    psum = prefixsum(img);
+    for (i = 0; i < H; i++) {
+        for (j = 0; j < W; j++) {
+            l = lowerBound(i,j);
+            r = upperBound(i,j);
+            delta = r - l;
+            img(i,j) = psum(l)-psum(r);
+            img(i,j) = img(i,j)/delta;
+        }
+    }
+}
+\end{lstlisting}
+
 
 
 %\\
-\fixme{Write.}
+%\fixme{Write.}
 %\comment{
 %Now comes the ``beef'' of the paper, where you explain what you
 %did. Again, organize it in paragraphs with titles. As in every section
