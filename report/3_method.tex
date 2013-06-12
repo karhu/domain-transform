@@ -1,22 +1,38 @@
-\section{Your Proposed Method}\label{sec:method}
+%\section{Your Proposed Method}\label{sec:method}
+\section{Optimizing Domain Transform}
+We started with the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors~\cite{GastalOliveira2011DomainTransform} and ported the code to C++. 
+\subsection{Basic version}
+In order to achieve the biggest optimisation potential the matrices have been wrapped in a simple struct (listing \ref{code:matrix_struct}).
+\begin{lstlisting}[caption=Matrix struct,label=code:matrix_struct]
+struct Mat2
+{
+    uint width, height;
+    float3* data; // size: width*height
+};
+\end{lstlisting}
+In order to preserve accuracy all images are stored in a \lstinline{float3} struct. Which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
+The algorithm starts by precomputing the differential of the image in both $x$ and $y$ directi
+
+
+%\\
 \fixme{Write.}
-\comment{
-Now comes the ``beef'' of the paper, where you explain what you
-did. Again, organize it in paragraphs with titles. As in every section
-you start with a very brief overview of the section.
-
-For this class, explain all the optimizations you performed. This mean, you first very briefly
-explain the baseline implementation, then go through locality and other optimizations, and finally SSE (every project will be slightly different of course). 
-Show or mention relevant analysis or assumptions. A few examples: 
-1) Profiling may lead you to optimize one part first; 
-2) bandwidth plus data transfer analysis may show that it is memory bound; 
-3) it may be too hard to implement the algorithm in full generality: make assumptions and state them 
-(e.g., we assume $n$ is divisible by 4; or, we consider only one type of input image); 
-4) explain how certain data accesses have poor locality. Generally, any type of analysis adds value to your work.
-
-As important as the final results is to show that you took a structured, organized approach to the optimization and that you explain why you did what you did.
-
-Mention and cite any external resources including library or other code.
-
-Good visuals or even brief code snippets to illustrate what you did are good. Pasting large amounts of code to fill the space is not good.
-}
+%\comment{
+%Now comes the ``beef'' of the paper, where you explain what you
+%did. Again, organize it in paragraphs with titles. As in every section
+%you start with a very brief overview of the section.
+%
+%For this class, explain all the optimizations you performed. This mean, you first very briefly
+%explain the baseline implementation, then go through locality and other optimizations, and finally SSE (every project will be slightly different of course). 
+%Show or mention relevant analysis or assumptions. A few examples: 
+%1) Profiling may lead you to optimize one part first; 
+%2) bandwidth plus data transfer analysis may show that it is memory bound; 
+%3) it may be too hard to implement the algorithm in full generality: make assumptions and state them 
+%(e.g., we assume $n$ is divisible by 4; or, we consider only one type of input image); 
+%4) explain how certain data accesses have poor locality. Generally, any type of analysis adds value to your work.
+%
+%As important as the final results is to show that you took a structured, organized approach to the optimization and that you explain why you did what you did.
+%
+%Mention and cite any external resources including library or other code.
+%
+%Good visuals or even brief code snippets to illustrate what you did are good. Pasting large amounts of code to fill the space is not good.
+%}
