@@ -136,17 +136,19 @@ We note that
 \fixme{Rewrite}
 \subsubsection{Precomputation} 
 
-For each pixel we compute the filter bounds on the fly, the amount of pixels included on both sides can be different for each pixel. Later we average over the pixels that are in the filter window, therefore we need to divide the sum of colour values by the number of pixels included. As the number of such division factors we need is bounded by the largest of the dimensions of the image and multiplication is much cheaper than division, we precomputed a table of $\frac{1}{n}$ elements which we used to compute the average.
+For each pixel we compute the filter bounds on the fly, which then determines the size of the box filter window. We then compute the average of all pixels in this window, which includes a divison by the number of pixels in the window. This window size can vary a lot between pixels, however it is bounded by the larger of the two image dimensions.
+
+For this reason we precomputed a table of the inverses of all possible division factors and replaced the costly division by a much cheaper multiplication operation.
 
 This did not give a performance increase which might be due to several factors. Firstly it might be that such precomputed values already exist, as these rather small factors which might be used a lot. Or, secondly, it is possible that there was some increase in performance, but this was unnoticeable because the additional array accesses caused more cache misses, and, consequently, more overhead.
 
-\subsubsection{Changing floats to \dots}
+\subsubsection{Changing image storage datatype}
 
 \fixme{Roofline plots}
 
-We tried to replace the float storing for colour and domain transform values with storing of unsigned char values, which obviously changes the precision, however should reduce memory overhead. Nevertheless it can be seen in the roofline plots that we are not memory bound at the moment, so this did not improve performance.
+We tried to store the per pixel color information in three \texttt{unsigned char} variables instead of the same number of \texttt{float} fields. This reduced the precision of intermediate storage but also reduces memory requirements for image storage by 75\%. 
 
-\fixme{Should we add a comment on the conversion overhead here?}
+This introduced additional cast operations after each load and before each store which might be one of the reasons why this didn't give any improved performance. Besides this, we are most likely not memory bound at the moment, an observation that is confirmed by our roofline plots.
 
 \comment{
 Apart from changing the precision that would also mean conversion overhead between float and char, as we still need to average over the pixels, which requires floating point operations.
@@ -163,7 +165,15 @@ We also tried blocking the computation for spatial locality in the output matrix
 
 \subsubsection{Instruction interleaving}
 
-We tried to combine the while loops that compute the borders for the filter, so that independent computation would fill the pipeline. This did not give any performance improvement, perhaps because of the fact that the combined loop still had a conditional statement for both filter borders which we cannot eradicate.
+We tried to combine the while loops that compute the borders for the filter, so that independent computation would fill the pipeline. This did not give any performance improvement, perhaps because of the fact that the combined loop still had conditional statements in between the addition operations we wanted to pipeline.
+
+\subsubsection{Loop unrolling and reordering}
+
+We write the filtered image data in a transposed manner with the consequence that these writes are not memory aligned. Thus, for every pixel written, a new cache line is accessed and invalidated till the next access to it. This causes an additional memory overhead as always the whole chache line will be loaded from memory.
+
+To improve on this situation we unrolled and reordered the loop iterations, with the goal that the computations happen in a more blocked fashion, causing more memory aligned writing operations. However this slowed down our code, possibly due to the increased amount of temporary register variables necessary.
+
+We also tried to tackle this problem by using stream-write intrinsics (direct writes that bypass the cache), but again with no success.
 
 \subsubsection{Reshuffling of data}
 
