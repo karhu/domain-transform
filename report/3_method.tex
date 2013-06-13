@@ -1,7 +1,8 @@
 %\section{Your Proposed Method}\label{sec:method}
 \section{Optimizing Domain Transform}
 We started with the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors~\cite{GastalOliveira2011DomainTransform} and ported the code to C++. 
-\subsection{Basic version}
+\subsection{Optimization Steps}
+\subsubsection{Basic version}
 In order to achieve the biggest optimisation potential the matrices have been wrapped in a simple struct (listing \ref{code:matrix_struct}).
 \begin{lstlisting}[caption=Matrix struct,label=code:matrix_struct]
 struct Mat2
@@ -39,7 +40,7 @@ void boxfilter(img, bounds) {
     }
 }
 \end{lstlisting}
-\subsection{Blocked transpose}
+\subsubsection{Blocked Transpose}
 With benchmarking the initial version we recognised that the transpose function was responsible for most of our computation time. Hence we blocked the transpose (listing \ref{code:blocked_transpose}).
 \begin{lstlisting}[caption=Transpose block, label=code:blocked_transpose]
 for (yo=0; yo<Hmod; yo+=BLOCK)
@@ -57,7 +58,48 @@ for (yo=0; yo<Hmod; yo+=BLOCK)
         out.data[idxT] = in.data[idx];
 // Handle bottom row and bottom rightmost block
 \end{lstlisting}
+\subsubsection{Inlining Bound Computation}
+In order for compiler to optimise the the code we inlined the bound computation.
+\begin{lstlisting}[caption=Inlining of the bound computation, label=code:inlining]
+void boxfilter(img, dx, boxR) {
+    psum = prefixsum(img);
+    for (i=0; i<H; i++)
+    {
+        posL = 0;
+        posR = 0;
+        for (j=0; j<W; j++)
+        {
+            // Bound computation
+            dtL = dx(i,j) - boxR;
+            dtR = dx(i,j) + boxR;
+            while (dx(i,posL) < dtL 
+                    && posL < W-1)
+                posL++;
+            while (posR < W && 
+                   dx(i,posR < dtR )
+                posR++;
+            // Boxfilter step
+        }
+    }
+\end{lstlisting}
+\subsubsection{Recombination}
+The inlining allowed us to inline the prefix sum into the boxfilter bound computation step (listing \ref{code:recombination}).
+\begin{lstlisting}[caption=Recombination, label=code:recombination]
+    while (dx(i,posL) < dtL 
+            && posL < W-1)
+        sum -= imgRow[posL];
+        posL++;
 
+    while (posR < W && 
+           dx(i,posR < dtR )
+        sum  += imgRow[posR];
+        posR++;
+    // Boxfilter step
+    invD = 1.0f /(posR-posL);
+    img(i,j) = sum * invD;
+\end{lstlisting}
+\subsubsection{Write transpose}
+By directly storing the data transposed with were able to increase performance and reduce the number of transpose functions needed to be computed. We note that 
 
 
 %\\
