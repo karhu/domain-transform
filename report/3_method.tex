@@ -1,8 +1,15 @@
 %\section{Your Proposed Method}\label{sec:method}
 \section{Optimizing Domain Transform}
-We started with the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors~\cite{GastalOliveira2011DomainTransform} and ported the code to C++. 
-\subsection{Basic version}
+
+This section describes the baseline implementation of the algorithm and the optimization steps we executed that made a significant impact on the performance of the code. Finally the section also describes the optimisation approaches we tried to use, which did not result in a significant performance improvement, and discuss why it might be the case for our algorithm.
+
+\subsection{Baseline version}
+
+Our baseline implementation is a straightforward port to C++ of the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors of the paper describing the algorithm~\cite{GastalOliveira2011DomainTransform}.
+
+\fixme{?}
 In order to achieve the biggest optimisation potential the matrices have been wrapped in a simple struct (listing \ref{code:matrix_struct}).
+
 \begin{lstlisting}[caption=Matrix struct,label=code:matrix_struct]
 struct Mat2
 {
@@ -10,9 +17,13 @@ struct Mat2
     float3* data; // size: width*height
 };
 \end{lstlisting}
-In order to preserve accuracy all images are stored in a \lstinline{float3} struct. Which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
-The algorithm starts by precomputing $dIdx$ and $dIdy$ the differential of the image in both $x$ and $y$ direction. Then the prefix sum of both $dIdx$ and $dIdY^T$ is compute. 
-During the filtering step we (listing \ref{code:filterstep}) compute \lstinline{computeBound} and \lstinline{boxFilter} twice. For each iteration step we transpose the images.
+
+In order to preserve the precision of calculations all images are store in a \lstinline{float3} struct, which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
+
+The algorithm starts with some initialisation procedures. During initialisation two matrices - $dIdx$ and $dIdy$ - are precomputed, which contain the differentials of the neighbouring image pixels in both $x$ and $y$ directions. Afterwards a prefix sum is computed for both $dIdx$ and $dIdy^T$, creating matrices which in fact contain for each pixel a mapping into 1D coordinate space along each direction.
+
+During the filtering step (see listing~\ref{code:filterstep}) we compute \lstinline{computeBound} and \lstinline{boxFilter} twice. After each computation step we transpose the images.
+
 \begin{lstlisting}[caption=Filterstep,label=code:filterstep]
 for (i=0; i<iterations; i++) {
     bounds = computeBound(img, dIdX, r);
@@ -23,8 +34,11 @@ for (i=0; i<iterations; i++) {
     img = transpose(img);
 }
 \end{lstlisting}
-The \lstinline{computeBound} step computes the one dimensional bound for each pixel for the box filter step. The bound is dependant on a user defined radius $r$. 
-During the box filter step the prefix sum of the image in the $x$ direction is precomputed with a separate function. During the box filter step the box filter makes use of the previously precomputed prefix sum and bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
+
+The \lstinline{computeBound} method computes the 1D bound for each pixel for the box filter, which is dependent on the predefined filter radius. 
+
+Box filter specific initialisation is executed before the actual box filter when the prefix sum of the pixel values is precomputed for further use. This cannot be done once for the whole algorithm and needs to be recomputed, as the pixel values change during execution. Then the \lstinline{boxFilter} makes use of the previously computed prefix sum and filter bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
+
 \begin{lstlisting}[caption=Boxfilter step, label=code:boxfilter]
 void boxfilter(img, bounds) {
     psum = prefixsum(img);
@@ -40,7 +54,124 @@ void boxfilter(img, bounds) {
 }
 \end{lstlisting}
 
+\subsection{Optimization Steps}
 
+\subsubsection{Blocked Transpose}
+
+After benchmarking the initial version we recognised that the transpose function was responsible for most of our computation time. Hence we blocked the transpose function (listing \ref{code:blocked_transpose}).
+
+\begin{lstlisting}[caption=Transpose block, label=code:blocked_transpose]
+for (yo=0; yo<Hmod; yo+=BLOCK)
+  for (xo=0; xo<Wmod; xo+=BLOCK)
+    for (uint y=yo; y<yo+BLOCK; y++)
+      for (uint x=xo; x<xo+BLOCK; x++)
+        uint idx = y*W + x;
+        uint idxT = x*H + y;
+        out.data[idxT] = in.data[idx];
+    xo = Wmod;
+    for (uint y=yo; y<yo+BLOCK; y++)
+      for (uint x=xo; x<W; x++)
+        uint idx = y*W + x;
+        uint idxT = x*H + y;
+        out.data[idxT] = in.data[idx];
+// Handle bottom row and bottom rightmost block
+\end{lstlisting}
+
+\subsubsection{Inlining Bound Computation}
+
+In order to allow the compiler to optimise the code we inlined the bound computation, which also allowed us to spare an additional pass through the data.
+
+\begin{lstlisting}[caption=Inlining of the bound computation, label=code:inlining]
+void boxfilter(img, dx, boxR) {
+    psum = prefixsum(img);
+    for (i=0; i<H; i++)
+    {
+        posL = 0;
+        posR = 0;
+        for (j=0; j<W; j++)
+        {
+            // Bound computation
+            dtL = dx(i,j) - boxR;
+            dtR = dx(i,j) + boxR;
+            while (dx(i,posL) < dtL 
+                    && posL < W-1)
+                posL++;
+            while (posR < W && 
+                   dx(i,posR < dtR )
+                posR++;
+            // Boxfilter step
+        }
+    }
+\end{lstlisting}
+
+\subsubsection{Recombination}
+
+In this optimisation step we tried to combine as many computation as we could in as few passes through the data as possible. We rearranged the initialisation step to conform to that idea, and inlined the prefix sum computation into the \lstinline{boxFilter} bound computation step, getting a sliding window approach (listing~\ref{code:recombination}).
+
+\begin{lstlisting}[caption=Recombination, label=code:recombination]
+    while (dx(i,posL) < dtL 
+            && posL < W-1)
+        sum -= imgRow[posL];
+        posL++;
+
+    while (posR < W && 
+           dx(i,posR < dtR )
+        sum  += imgRow[posR];
+        posR++;
+    // Boxfilter step
+    invD = 1.0f /(posR-posL);
+    img(i,j) = sum * invD;
+\end{lstlisting}
+
+\subsubsection{Write transpose}
+
+Previously we have transposed the data after each pass of the filter to keep the locality of the computation. However this requires going through the whole image, and by directly storing the data transposed we were able to increase performance and reduce the number of explicit transpositions needed to be computed. 
+
+\fixme{finish}
+
+We note that 
+
+\subsection{Failed optimization attempts}
+
+\fixme{Rewrite}
+\subsubsection{Precomputation} 
+
+For each pixel we compute the filter bounds on the fly, the amount of pixels included on both sides can be different for each pixel. Later we average over the pixels that are in the filter window, therefore we need to divide the sum of colour values by the number of pixels included. As the number of such division factors we need is bounded by the largest of the dimensions of the image and multiplication is much cheaper than division, we precomputed a table of $\frac{1}{n}$ elements which we used to compute the average.
+
+This did not give a performance increase which might be due to several factors. Firstly it might be that such precomputed values already exist, as these rather small factors which might be used a lot. Or, secondly, it is possible that there was some increase in performance, but this was unnoticeable because the additional array accesses caused more cache misses, and, consequently, more overhead.
+
+\subsubsection{Changing floats to \dots}
+
+\fixme{Roofline plots}
+
+We tried to replace the float storing for colour and domain transform values with storing of unsigned char values, which obviously changes the precision, however should reduce memory overhead. Nevertheless it can be seen in the roofline plots that we are not memory bound at the moment, so this did not improve performance.
+
+\fixme{Should we add a comment on the conversion overhead here?}
+
+\comment{
+Apart from changing the precision that would also mean conversion overhead between float and char, as we still need to average over the pixels, which requires floating point operations.
+}
+
+\subsubsection{Blocking}
+
+Unfortunately, one of the most common optimization approaches does not work for the algorithm in question. In general blocking allows to increase cache locality, especially when the block sizes are calculated in a way such that the working set fits in cache. However that also means that the computation for each image pixel should depend on a fixed number of adjacent pixels, which isn't the case for the edge-aware filter.
+
+We have gathered statistics on the amount of pixels used for the test images, and these were numbers between $30$ and $150$ pixels. That would mean that our block sizes should be around $150$ pixels, which is too much to be a reasonable size. Also this number may increase up to the whole dimension of the image as the filter bound depend on the image data (for example in the case of a monochrome line in the image with a wide filter window). Smaller block sizes also don't make sense as in that case we would need to re-read information if the filter bound goes outside the block which would mean more overhead. 
+
+\fixme{Do we have an explanation for that?}
+We also tried blocking the computation for spatial locality in the output matrix, as the faster versions write the transposed output directly. For some reason this only made the computation run even slower that the non-blocked version.
+
+\subsubsection{Instruction interleaving}
+
+We tried to combine the while loops that compute the borders for the filter, so that independent computation would fill the pipeline. This did not give any performance improvement, perhaps because of the fact that the combined loop still had a conditional statement for both filter borders which we cannot eradicate.
+
+\subsubsection{Reshuffling of data}
+
+\fixme{Rewrite}
+
+Most of the versions we implemented work on the interleaved colour arrays, storing colours as $rgbrgb\dots$. We attempted to reshuffle the data to three separate arrays, each containing one colour, which didn't bring any performance improvement. 
+
+This behaviour could be due to the fact that that way we now need to transpose three separate arrays still, one for each colour. We might write them transposed as well, however then we would access 3 different arrays at a large stride, none of which would get reused in any way as by next access these addresses will be already replaced.
 
 %\\
 %\fixme{Write.}
