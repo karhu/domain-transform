@@ -104,15 +104,32 @@ By directly storing the data transposed with were able to increase performance a
 \subsection{Failed optimization attempts}
 
 \fixme{Rewrite}
-\subsubsection{Precomputation} Division precomputation did not make any difference.
+\subsubsection{Precomputation} 
+
+For each pixel we compute the filter bounds on the fly, the amount of pixels included on both sides can be different for each pixel. Later we average over the pixels that are in the filter window, therefore we need to divide the sum of colour values by the number of pixels included. As the number of such division factors we need is bounded by the largest of the dimensions of the image and multiplication is much cheaper than division, we precomputed a table of $\frac{1}{n}$ elements which we used to compute the average.
+
+This did not give a performance increase which might be due to several factors. Firstly it might be that such precomputed values already exist, as these rather small factors which might be used a lot. Or, secondly, it is possible that there was some increase in performance, but this was unnoticeable because the additional array accesses caused more cache misses, and, consequently, more overhead.
 
 \subsubsection{Changing floats to \dots}
 
-\fixme{Write}
+\fixme{Roofline plots}
+
+We tried to replace the float storing for colour and domain transform values with storing of unsigned char values, which obviously changes the precision, however should reduce memory overhead. Nevertheless it can be seen in the roofline plots that we are not memory bound at the moment, so this did not improve performance.
+
+\fixme{Should we add a comment on the conversion overhead here?}
+
+\comment{
+Apart from changing the precision that would also mean conversion overhead between float and char, as we still need to average over the pixels, which requires floating point operations.
+}
 
 \subsubsection{Blocking}
 
-We tried to block the computation for spatial locality for the output matrix which didn't give any improvement (actually made it worse).
+Unfortunately, one of the most common optimization approaches does not work for the algorithm in question. In general blocking allows to increase cache locality, especially when the block sizes are calculated in a way such that the working set fits in cache. However that also means that the computation for each image pixel should depend on a fixed number of adjacent pixels, which isn't the case for the edge-aware filter.
+
+We have gathered statistics on the amount of pixels used for the test images, and these were numbers between $30$ and $150$ pixels. That would mean that our block sizes should be around $150$ pixels, which is too much to be a reasonable size. Also this number may increase up to the whole dimension of the image as the filter bound depend on the image data (for example in the case of a monochrome line in the image with a wide filter window). Smaller block sizes also don't make sense as in that case we would need to re-read information if the filter bound goes outside the block which would mean more overhead. 
+
+\fixme{Do we have an explanation for that?}
+We also tried blocking the computation for spatial locality in the output matrix, as the faster versions write the transposed output directly. For some reason this only made the computation run even slower that the non-blocked version.
 
 \subsubsection{Instruction interleaving}
 
@@ -120,9 +137,11 @@ We tried to combine the while loops that compute the borders for the filter, so 
 
 \subsubsection{Reshuffling of data}
 
+\fixme{Rewrite}
+
 Most of the versions we implemented work on the interleaved colour arrays, storing colours as $rgbrgb\dots$. We attempted to reshuffle the data to three separate arrays, each containing one colour, which didn't bring any performance improvement. 
 
-We transpose 3 different arrays which is slow. Or we might write transposed, but then we'd access 3 arrays at a stride which would mess the cache up anyway.
+This behaviour could be due to the fact that that way we now need to transpose three separate arrays still, one for each colour. We might write them transposed as well, however then we would access 3 different arrays at a large stride, none of which would get reused in any way as by next access these addresses will be already replaced.
 
 %\\
 %\fixme{Write.}
