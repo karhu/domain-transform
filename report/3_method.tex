@@ -1,9 +1,15 @@
 %\section{Your Proposed Method}\label{sec:method}
 \section{Optimizing Domain Transform}
-We started with the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors~\cite{GastalOliveira2011DomainTransform} and ported the code to C++. 
-\subsection{Optimization Steps}
-\subsubsection{Basic version}
+
+This section describes the baseline implementation of the algorithm and the optimization steps we executed that made a significant impact on the performance of the code. Finally the section also describes the optimisation approaches we tried to use, which did not result in a significant performance improvement, and discuss why it might be the case for our algorithm.
+
+\subsection{Baseline version}
+
+Our baseline implementation is a straightforward port to C++ of the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors of the paper describing the algorithm~\cite{GastalOliveira2011DomainTransform}.
+
+\fixme{?}
 In order to achieve the biggest optimisation potential the matrices have been wrapped in a simple struct (listing \ref{code:matrix_struct}).
+
 \begin{lstlisting}[caption=Matrix struct,label=code:matrix_struct]
 struct Mat2
 {
@@ -11,9 +17,13 @@ struct Mat2
     float3* data; // size: width*height
 };
 \end{lstlisting}
-In order to preserve accuracy all images are stored in a \lstinline{float3} struct. Which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
-The algorithm starts by precomputing $dIdx$ and $dIdy$ the differential of the image in both $x$ and $y$ direction. Then the prefix sum of both $dIdx$ and $dIdY^T$ is compute. 
-During the filtering step we (listing \ref{code:filterstep}) compute \lstinline{computeBound} and \lstinline{boxFilter} twice. For each iteration step we transpose the images.
+
+In order to preserve the precision of calculations all images are store in a \lstinline{float3} struct, which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
+
+The algorithm starts with some initialisation procedures. During initialisation two matrices - $dIdx$ and $dIdy$ - are precomputed, which contain the differentials of the neighbouring image pixels in both $x$ and $y$ directions. Afterwards a prefix sum is computed for both $dIdx$ and $dIdy^T$, creating matrices which in fact contain for each pixel a mapping into 1D coordinate space along each direction.
+
+During the filtering step (see listing~\ref{code:filterstep}) we compute \lstinline{computeBound} and \lstinline{boxFilter} twice. After each computation step we transpose the images.
+
 \begin{lstlisting}[caption=Filterstep,label=code:filterstep]
 for (i=0; i<iterations; i++) {
     bounds = computeBound(img, dIdX, r);
@@ -24,8 +34,11 @@ for (i=0; i<iterations; i++) {
     img = transpose(img);
 }
 \end{lstlisting}
-The \lstinline{computeBound} step computes the one dimensional bound for each pixel for the box filter step. The bound is dependant on a user defined radius $r$. 
-During the box filter step the prefix sum of the image in the $x$ direction is precomputed with a separate function. During the box filter step the box filter makes use of the previously precomputed prefix sum and bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
+
+The \lstinline{computeBound} method computes the 1D bound for each pixel for the box filter, which is dependent on the predefined filter radius. 
+
+Box filter specific initialisation is executed before the actual box filter when the prefix sum of the pixel values is precomputed for further use. This cannot be done once for the whole algorithm and needs to be recomputed, as the pixel values change during execution. Then the \lstinline{boxFilter} makes use of the previously computed prefix sum and filter bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
+
 \begin{lstlisting}[caption=Boxfilter step, label=code:boxfilter]
 void boxfilter(img, bounds) {
     psum = prefixsum(img);
@@ -40,8 +53,13 @@ void boxfilter(img, bounds) {
     }
 }
 \end{lstlisting}
+
+\subsection{Optimization Steps}
+
 \subsubsection{Blocked Transpose}
-With benchmarking the initial version we recognised that the transpose function was responsible for most of our computation time. Hence we blocked the transpose (listing \ref{code:blocked_transpose}).
+
+After benchmarking the initial version we recognised that the transpose function was responsible for most of our computation time. Hence we blocked the transpose function (listing \ref{code:blocked_transpose}).
+
 \begin{lstlisting}[caption=Transpose block, label=code:blocked_transpose]
 for (yo=0; yo<Hmod; yo+=BLOCK)
   for (xo=0; xo<Wmod; xo+=BLOCK)
@@ -58,8 +76,11 @@ for (yo=0; yo<Hmod; yo+=BLOCK)
         out.data[idxT] = in.data[idx];
 // Handle bottom row and bottom rightmost block
 \end{lstlisting}
+
 \subsubsection{Inlining Bound Computation}
-In order for compiler to optimise the the code we inlined the bound computation.
+
+In order to allow the compiler to optimise the code we inlined the bound computation, which also allowed us to spare an additional pass through the data.
+
 \begin{lstlisting}[caption=Inlining of the bound computation, label=code:inlining]
 void boxfilter(img, dx, boxR) {
     psum = prefixsum(img);
@@ -82,8 +103,11 @@ void boxfilter(img, dx, boxR) {
         }
     }
 \end{lstlisting}
+
 \subsubsection{Recombination}
-The inlining allowed us to inline the prefix sum into the boxfilter bound computation step (listing \ref{code:recombination}).
+
+In this optimisation step we tried to combine as many computation as we could in as few passes through the data as possible. We rearranged the initialisation step to conform to that idea, and inlined the prefix sum computation into the \lstinline{boxFilter} bound computation step, getting a sliding window approach (listing~\ref{code:recombination}).
+
 \begin{lstlisting}[caption=Recombination, label=code:recombination]
     while (dx(i,posL) < dtL 
             && posL < W-1)
@@ -98,8 +122,14 @@ The inlining allowed us to inline the prefix sum into the boxfilter bound comput
     invD = 1.0f /(posR-posL);
     img(i,j) = sum * invD;
 \end{lstlisting}
+
 \subsubsection{Write transpose}
-By directly storing the data transposed with were able to increase performance and reduce the number of transpose functions needed to be computed. We note that 
+
+Previously we have transposed the data after each pass of the filter to keep the locality of the computation. However this requires going through the whole image, and by directly storing the data transposed we were able to increase performance and reduce the number of explicit transpositions needed to be computed. 
+
+\fixme{finish}
+
+We note that 
 
 \subsection{Failed optimization attempts}
 
