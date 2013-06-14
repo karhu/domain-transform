@@ -21,14 +21,13 @@ The algorithm starts with some initialisation procedures. During initialisation 
 During the filtering step (see listing~\ref{code:filterstep}) we compute \texttt{compute\ Bound} and \texttt{boxFilter} twice. After each computation step we transpose the images.
 
 \begin{lstlisting}[caption=Filterstep,label=code:filterstep]
-for (i=0; i<iterations; i++) {
+for (i=0; i<iterations; i++)
     bounds = computeBound(img, dIdX, r);
     img = boxFilter(img, bounds);
     img = transpose(img);
     bounds = computeBound(img, dIdY, r);
     img = boxFilter(img, dIdY, bounds);
     img = transpose(img);
-}
 \end{lstlisting}
 
 The \lstinline{computeBound} method computes the 1D bound for each pixel for the box filter, which is dependent on the predefined filter radius. 
