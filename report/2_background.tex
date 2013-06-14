@@ -1,9 +1,7 @@
 \section{Background: Whatever the Background is}\label{sec:background}
-\fixme{Write.}
+\fixme{Review.}
 
-The original publication on the Domain Transform Filtering Technique ~\cite{GastalOliveira2011DomainTransform} gives  an in depth explanation of the theoretical foundations of the technique as well as presenting three different implementation approaches. These three approaches are called "Normalized convolution" (NC), "Interpolated convolution" (IC) and "Recursive filtering" (RF). 
-
-In this section we will present the necessary background information to follow our implementation of the first of these three algorithms, namely "Normalized convolution". For a more detailed explanation of the method and it's background, please refer to the original publication.
+In this section we will present the necessary background information to follow our implementation of the \textit{Normalized convolution} domain transform filtering algorithm. For a more detailed explanation of the method and its theoretical background, please refer to the original ~\cite{GastalOliveira2011DomainTransform}.
 
 The general outline of the algorithm is given in \fixme{add figure}. We distinguish two algorithm steps: First the initialisation step, where the domain transform data of the image is computed an stored. Second the iteration step where multiple filter iterations are applied to the image data, using the domain transform information.
 
@@ -31,6 +29,14 @@ The use of a box filter might first look like a severe restriction as usually a 
 In asymptotic terms, the algorithm has a complexity of \BigO{n}, which makes it already very competitive with other approaches to edge-aware image filtering. For optimization purposes we are however interested in a more thorough cost analysis of the method. Therefore we have counted the number of different floating point operations executed by the algorithm:
 
 \fixme{add counted flop counts etc}
+
+\setlength\fboxsep{0pt}
+\setlength\fboxrule{0.5pt}
+
+\begin{figure}\vspace{-1mm}
+  \includegraphics[trim=10mm 145mm 100mm 10mm, clip, width=0.48\textwidth]{figures/flowchart.pdf}
+  \caption{Algorithm flowchart\label{flowchart}}
+\end{figure}
 
 \comment{
 Give a short, self-contained summary of necessary
