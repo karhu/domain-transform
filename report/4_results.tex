@@ -1,6 +1,6 @@
 \section{Experimental Results}\label{sec:exp}
 \subsection{Experimental Setup}\label{sec:exp_setup8}
-In order to test and benchmark the code we stored each major implementation revision in a separate folder. We then ran a script that compiled the code and benchmarked it against different parameter sets including $5$ different image sizes (Figure \ref{tab:images}). The image sizes were chosen in such a way that they represent real world applications from image and video processing. The images \texttt{bhudda\_200.png} and \linebreak\texttt{bhudda\_300.png} have been chosen since both fit into the L3 cache. 
+In order to test and benchmark the code we stored each major implementation revision in a separate folder. We then ran a script that compiled the code and benchmarked it against different parameter sets including $5$ different image sizes (Table \ref{tab:images}). The image sizes were chosen in such a way that they represent real world applications from image and video processing. The images \texttt{bhudda\_200.png} and \linebreak\texttt{bhudda\_300.png} have been chosen since both fit into the L3 cache. 
 \begin{table}
 \centering
 {\small
@@ -38,7 +38,7 @@ We were able to achieve a speedup of $1.98$ for the cache based image \texttt{bh
  
 \begin{figure}\vspace{-10mm}
   \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/performance}
-  \caption{Performance plot comparing our different optimisation levels. Compiler: GCC 4.6.4, flags: \lstinline{-O3 -march=corei7}.\label{performance}}
+  \caption{Performance plot comparing our different code revisions. Compiler: GCC 4.6.4, flags: \lstinline{-O3 -march=corei7}.\label{performance}}
 \end{figure}
  
 \begin{figure}\vspace{-6mm}\hspace{-5mm}
