@@ -112,7 +112,7 @@ void boxfilter(img, dx, boxR)
 
 \subsubsection{Vectorisation}
 As a last optimisation step we added vectorisation. To ensure proper alignment we added a fourth floating point value to the \lstinline{float3} type (Listing \ref{code:vec_float3}).
-\begin{lstlisting}[label=Vectorised float3 type, label=code:vec_float3] 
+\begin{lstlisting}[caption=Vectorised float3 type, label=code:vec_float3] 
 union float3{
   struct{ float r,g,b,a; };
   __m128 mmvalue;
