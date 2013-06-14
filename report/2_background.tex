@@ -11,6 +11,9 @@ In general this increases the dimensionality of the problem by adding a dimensio
 For a RGB color image this would lead to a 5-dimensional space (3 radiometric + 2 spatial dimensions). The domain transform method reduces this dimensionality as follows:
 First, it treats the two spatial dimensions separately. What this means is that the image is separately filtered along its rows and columns. Secondly, it merges the three radiometric dimensions and the remaining one spatial dimension into the one-dimensional space of the domain transform. This transformation retains the necessary distance properties from the original space.
 
+Looking at a single image row, the pixels can be enumerated from left to right as $ p_0 \dots p_n$. Each pixel $p_i$ is associated with a domain transform value $dt_i$ where it holds that $\forall k : dt_k \leq dt_{k+1}$. In other words, the series of domain transform values is monotonically increasing. The exact difference between two consecutive domain transform values depends on the pixels spatial and radiometric distance.
+
+
 
 \mypar{Cost Analysis}
 In asymptotic terms, the algorithm has a complexity of \BigO{n}, which makes it already very competitive with other approaches to edge-aware image filtering. For optimization purposes we are however interested in a more thorough cost analysis of the method. Therefore we have counted the number of different floating point operations executed by the algorithm:
