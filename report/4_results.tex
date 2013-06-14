@@ -16,9 +16,9 @@ In order to test and benchmark the code we stored each major benchmark revision 
 \end{figure}
 
 \subsubsection{Platform}
-Benchmarking was done on a Ubuntu Linux 12.10 running on a Intel Core i7-3610QM "Ivy Bridge" CPU. In order to generate repeat reproducible results the CPU frequency was fixed. To $2.3$ GHz.
+Benchmarking was done on a Ubuntu Linux 12.10 running on a Intel Core i7-3610QM "Ivy Bridge" CPU. In order to generate repeat reproducible results the CPU frequency was to $2.3$ GHz with Turbo Boost disabled.
 \subsubsection{Tools and counters used}
-The code was both compiled and executed on GCC 4.6.4 and ICC 13.1.2.183 64bit using the compiler flags \lstinline{-O3 -march=corei7}. In the results shown we only show results obtained with GCC since the ICC results show the same performance measurements.
+The code was both compiled and executed on GCC 4.6.4 and ICC 13.1.2.183 64bit. We found that the compiler flags \lstinline{-O3 -march=corei7} produced optimal results in our case. In the results shown we only show results obtained with GCC since the ICC results show the same performance measurements. We noticed that code generated with the compiler flags \lstinline{-O3 -march=corei7-avx} was slower. Since the compiler used the \lstinline{vaddps} instruction with 3 input values. Whereas the \lstinline{-O3 -march=corei7} only add the \lstinline{addps} instruction which uses 2 input values and thus reduces the code size and helps with branch miss predictions since there's less code to load. 
 \subsection{Results}
 pro
 \setlength\fboxsep{0pt}
@@ -26,12 +26,12 @@ pro
  
 \begin{figure}\vspace{-1mm}
   \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/performance}
-  \caption{Performance plot comparing our different optimisation levels.\label{performance}}
+  \caption{Performance plot comparing our different optimisation levels. Compiler: GCC 4.6.4, flags: \lstinline{-O3 -march=corei7}.\label{performance}}
 \end{figure}
  
 \begin{figure}\vspace{-1mm}
   \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/roofline}
-  \caption{Roofline plot showing the performance of our vectorised code.\label{roofline}}
+  \caption{Roofline plot showing the performance of our vectorised code. Compiler: GCC 4.6.4, flags: \lstinline{-O3 -march=corei7}.\label{roofline}}
 \end{figure}
 
 \fixme{Write.}
