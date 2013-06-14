@@ -21,7 +21,7 @@ In order to preserve the precision of calculations all images are store using a 
 
 The algorithm starts with some initialisation procedures. During initialisation two matrices - $dIdx$ and $dIdy$ - are precomputed, which contain the differentials of the neighbouring image pixels in both $x$ and $y$ directions. Afterwards a prefix sum is computed for both $dIdx$ and $dIdy^T$, creating matrices which in fact contain for each pixel a mapping into 1D coordinate space along each direction.
 
-During the filtering step (see listing~\ref{code:filterstep}) we compute \texttt{comp\-ute\ Bound} and \texttt{boxFilter} twice. After each computation step we transpose the images.
+During the filtering step (Listing~\ref{code:filterstep}) we compute \texttt{comp\-ute\ Bound} and \texttt{boxFilter} twice. After each computation step we transpose the images.
 
 \begin{lstlisting}[caption=Filterstep,label=code:filterstep]
 for (i=0; i<iterations; i++)
@@ -35,7 +35,7 @@ for (i=0; i<iterations; i++)
 
 The \lstinline{computeBound} method computes the 1D upper and lower bound for the box filter of each pixel, which is dependent on the predefined filter radius. 
 
-Before the actual application of the box filter, a prefix sum over the image pixels is computed. This cannot be done once for the whole algorithm and needs to be recomputed, as the pixel values change between iterations. Then the \lstinline{boxFilter} makes use of the previously computed prefix sum and filter bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
+Before the actual application of the box filter, a prefix sum over the image pixels is computed. This cannot be done once for the whole algorithm and needs to be recomputed, as the pixel values change between iterations. Then the \lstinline{boxFilter} makes use of the previously computed prefix sum and filter bounds to compute the filtered value for each pixel (Listing~\ref{code:boxfilter}).
 
 \begin{lstlisting}[caption=Boxfilter step, label=code:boxfilter]
 void boxfilter(img, bounds) 
@@ -80,7 +80,7 @@ void boxfilter(img, dx, boxR)
 
 \subsubsection{Recombination}
 
-In this optimisation step we tried to combine as many computation operations as possible in as few passes through the data as possible. We rearranged the initialisation step to conform to that idea, and inlined the prefix sum computation into the \lstinline{boxFilter} bound computation step, getting a sliding window approach (listing~\ref{code:recombination}). This changes renders the prefix sum computation unnecessary as the sum of the values in the box filter window are now computed on the fly incrementally.
+In this optimisation step we tried to combine as many computation operations as possible in as few passes through the data as possible. We rearranged the initialisation step to conform to that idea, and inlined the prefix sum computation into the \lstinline{boxFilter} bound computation step, getting a sliding window approach (Listing~\ref{code:recombination}). This changes renders the prefix sum computation unnecessary as the sum of the values in the box filter window are now computed on the fly incrementally.
 
 \begin{lstlisting}[caption=Recombination, label=code:recombination]
     while (dx(i,posL) < dtL 
@@ -99,7 +99,7 @@ In this optimisation step we tried to combine as many computation operations as 
 
 \subsubsection{Write transpose}\label{sec:method:write_transposed}
 
-Previously we explicitly transposed the data after each pass of the filter to keep the locality of the computation. However this requires an additional pass through the whole image data. By instead directly storing the data transposed we were able to further increase performance (listing \ref{code:write_transpose}). 
+Previously we explicitly transposed the data after each pass of the filter to keep the locality of the computation. However this requires an additional pass through the whole image data. By instead directly storing the data transposed we were able to further increase performance (Listing \ref{code:write_transpose}). 
 \begin{lstlisting}[caption=Write transpose, label=code:write_transpose]
 void boxfilter(img, dx, boxR) 
     for (i=0; i<H; i++)
@@ -111,20 +111,20 @@ void boxfilter(img, dx, boxR)
 \end{lstlisting}
 
 \subsubsection{Vectorisation}
-As a last optimisation step we added vectorization. To ensure proper alignment we added a fourth floating point value to the \lstinline{float3} type (listing \ref{code:vec_float3}).
+As a last optimisation step we added vectorisation. To ensure proper alignment we added a fourth floating point value to the \lstinline{float3} type (Listing \ref{code:vec_float3}).
 \begin{lstlisting}[label=Vectorised float3 type, label=code:vec_float3] 
 union float3{
   struct{ float r,g,b,a; };
   __m128 mmvalue;
 };
 \end{lstlisting}
-The vectorization of the individual operations proved straightforward. The operations on the individual colour values could be replaced with a single vector operation. This also reduced the number of instructions in the code and thus the number of branch misspredictions as measured in VTune. Using this approach we could theoretically increase performance by a factor of three (instead of the usual four times factor, because 1/4 of the operations is executed on padding data). In practise we however only observed a small speedup of a few percent. Our explanation for this is that we exchanged instruction level parallelism with vector instruction paralellism. Using the vector instructions we don't have enough independent computations anymore to fill the instruction pipeline.
+The vectorisation of the individual operations proved straightforward. The operations on the individual colour values could be replaced with a single vector operation. This also reduced the number of instructions in the code and thus the number of branch mispredictions as measured in VTune. Using this approach we could theoretically increase performance by a factor of three (instead of the usual four times factor, because 1/4 of the operations is executed on padding data). In practice we however only observed a small speedup of a few percent. Our explanation for this is that we exchanged instruction level parallelism with vector instruction parallelism. Using the vector instructions we do not have enough independent computations anymore to fill the instruction pipeline.
 
 \subsection{Failed optimisation attempts}
 
 \subsubsection{Precomputation} 
 
-Benchmarking the program with Intel VTune showed a high number of floating point division operations executed. Since the box filter computes the inverse of values in the range $[1,\text{image width}-1]$ we precomputed the inverse during compile time. Thus the precomputed values could be looked up by from memory and be used in faster multiplication operations.
+Benchmarking the program with Intel VTune showed a high number of floating point division operations executed. Since the box filter computes the inverse of values in the range $[1,\text{image width}-1]$ we precomputed the inverse during compile time. Thus the precomputed values could be looked up from memory and be used in faster multiplication operations.
 
 Using precomputed values in the range of $[1,100]$ returned the better performance than precomputing all values. Unfortunately the performance attempt didn't bring any overall performance improvements compared to the method discussed in section \ref{sec:method:write_transposed}.
 
@@ -134,14 +134,14 @@ Using precomputed values in the range of $[1,100]$ returned the better performan
 %
 %For this reason we precomputed a table of the inverses of all possible division factors and replaced the costly division by a much cheaper multiplication operation.
 
-This might be due to several factors:
-Firstly it might be that such precomputed values already exist, as these rather small factors which might be used a lot and the time needed to lookup large values outweigh the time needed for computing the divisions on the fly. Or, secondly, it is possible that there was some increase in performance, but this was unnoticeable because the additional array accesses caused more cache misses, and, consequently, more overhead.
+This might be due to several factors.
+Firstly, it might be that such precomputed values already exist, as these rather small factors which might be used a lot and the time needed to lookup large values outweigh the time needed for computing the divisions on the fly. Or, secondly, it is possible that there was some increase in performance, but this was unnoticeable because the additional array accesses caused more cache misses, and, consequently, more overhead.
 
 \subsubsection{Changing image storage datatype}
 
-We tried to store the per pixel color information in three \texttt{unsigned char} variables instead of the same number of \texttt{float} fields. This reduced the precision of intermediate storage but also reduces memory requirements for image storage by 75\%.
+We tried to store the per pixel colour information in three \texttt{unsigned char} variables instead of the same number of \texttt{float} fields. This reduced the precision of intermediate storage but also reduces memory requirements for image storage by 75\%.
  
-Unfortunately this also introduced additional conversion overhead for each operation: After loading from memory the char needs to be casted to int and from there to float. Once all computations are completed the floats need to be casted back again. 
+Unfortunately, this also introduced additional conversion overhead for each operation: after loading from memory the char needs to be cast to int and from there to float. Once all computations are completed the floats need to be cast back again. 
 
 We felt that the conversion steps proved to much overhead (5 cycles latency per conversion) to increase performance next to memory and additional code required.
 \comment{
@@ -160,15 +160,13 @@ We tried to combine the while loops that compute the borders for the filter. Her
 
 \subsubsection{Loop unrolling and reordering}
 
-We write the filtered image data in a transposed manner with the consequence that these writes are not memory aligned. Thus, for every pixel written, a new cache line is accessed and invalidated till the next access to it. This causes an additional memory overhead as always the whole chache line will be loaded from memory.
+We write the filtered image data in a transposed manner with the consequence that these writes are not memory aligned. Thus, for every pixel written, a new cache line is accessed and invalidated till the next access to it. This causes an additional memory overhead as always the whole cache line will be loaded from memory.
 
 To improve on this situation we unrolled and reordered the loop iterations, with the goal that the computations happen in a more blocked fashion, causing more memory aligned writing operations. However this slowed down our code, possibly due to the increased amount of temporary register variables necessary.
 
 We also tried to tackle this problem by using stream-write intrinsics (direct writes that bypass the cache), but again with no success.
 
 \subsubsection{Reshuffling of data}
-
-\fixme{Rewrite}
 
 Most of the versions we implemented work on the interleaved colour arrays, storing colours as $rgbrgb\dots$. We attempted to switch from an array of structs to a struct of arrays, each array containing one colour. However, this didn't lead to a smaller working set size and didn't bring any performance improvement. 
 
