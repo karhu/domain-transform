@@ -137,6 +137,7 @@ void boxfilter(img, dx, boxR)
         img(ij,i) = sum * invD;
 \end{lstlisting}
 
+\subsubsection{Vectorization}
 
 \subsection{Failed optimization attempts}
 
@@ -158,12 +159,12 @@ Firstly it might be that such precomputed values already exist, as these rather 
 
 \subsubsection{Changing image storage datatype}
 
-\fixme{Roofline plots}
+We tried to store the per pixel color information in three \texttt{unsigned char} variables instead of the same number of \texttt{float} fields. This reduced the precision of intermediate storage but also reduces memory requirements for image storage by 75\%.
+ 
+Unfortunately it also increased to the number of operations needed for each operation computed per pixel.  
+This introduced additional conversion overhead for each operation: After loading from memory the char needs to be casted to int and from there to float. Once the computation is completed the floats need to be casted again. 
 
-We tried to store the per pixel color information in three \texttt{unsigned char} variables instead of the same number of \texttt{float} fields. This reduced the precision of intermediate storage but also reduces memory requirements for image storage by 75\%. 
-
-This introduced additional cast operations after each load and before each store which might be one of the reasons why this didn't give any improved performance. Besides this, we are most likely not memory bound at the moment, an observation that is confirmed by our roofline plots.
-
+We felt that the conversion steps proved to much overhead (5 cycles latency per operation) to increase performance next to memory and additional code required.
 \comment{
 Apart from changing the precision that would also mean conversion overhead between float and char, as we still need to average over the pixels, which requires floating point operations.
 }
