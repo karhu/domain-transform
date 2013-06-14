@@ -1,15 +1,11 @@
 %\section{Your Proposed Method}\label{sec:method}
 \section{Optimizing Domain Transform}
 
-This section describes the baseline implementation of the algorithm and the optimization steps we executed that made a significant impact on the performance of the code. Finally the section also describes the optimisation approaches we tried to use, which did not result in a significant performance improvement, and discuss why it might be the case for our algorithm.
+This section describes the baseline implementation of the algorithm and the optimisation steps we executed that made a significant impact on the performance of the code. Finally the section also describes the optimisation approaches we tried to use, which did not result in a significant performance improvement, and discuss why it might be the case for our algorithm.
 
 \subsection{Baseline version}
 
 Our baseline implementation is a straightforward port to C++ of the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors of the paper describing the algorithm~\cite{GastalOliveira2011DomainTransform}.
-
-\fixme{?}
-In order to achieve the biggest optimisation potential the matrices have been wrapped in a simple struct (listing \ref{code:matrix_struct}). This allows us to directly operate on the indices of the individual elements.
-
 \begin{lstlisting}[caption=Matrix struct,label=code:matrix_struct]
 struct Mat2
 {
@@ -22,7 +18,7 @@ In order to preserve the precision of calculations all images are store in a \ls
 
 The algorithm starts with some initialisation procedures. During initialisation two matrices - $dIdx$ and $dIdy$ - are precomputed, which contain the differentials of the neighbouring image pixels in both $x$ and $y$ directions. Afterwards a prefix sum is computed for both $dIdx$ and $dIdy^T$, creating matrices which in fact contain for each pixel a mapping into 1D coordinate space along each direction.
 
-During the filtering step (see listing~\ref{code:filterstep}) we compute \lstinline{computeBound} and \lstinline{boxFilter} twice. After each computation step we transpose the images.
+During the filtering step (see listing~\ref{code:filterstep}) we compute \texttt{compute\ Bound} and \texttt{boxFilter} twice. After each computation step we transpose the images.
 
 \begin{lstlisting}[caption=Filterstep,label=code:filterstep]
 for (i=0; i<iterations; i++) {
@@ -40,18 +36,15 @@ The \lstinline{computeBound} method computes the 1D bound for each pixel for the
 Box filter specific initialisation is executed before the actual box filter when the prefix sum of the pixel values is precomputed for further use. This cannot be done once for the whole algorithm and needs to be recomputed, as the pixel values change during execution. Then the \lstinline{boxFilter} makes use of the previously computed prefix sum and filter bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
 
 \begin{lstlisting}[caption=Boxfilter step, label=code:boxfilter]
-void boxfilter(img, bounds) {
+void boxfilter(img, bounds) 
     psum = prefixsum(img);
-    for (i = 0; i < H; i++) {
-        for (j = 0; j < W; j++) {
+    for (i = 0; i < H; i++) 
+        for (j = 0; j < W; j++)
             l = lowerBound(i,j);
             r = upperBound(i,j);
             delta = r - l;
             img(i,j) = psum(l)-psum(r);
             img(i,j) = img(i,j)/delta;
-        }
-    }
-}
 \end{lstlisting}
 
 \subsection{Optimization Steps}
@@ -68,11 +61,9 @@ In order to allow the compiler to optimise the code we inlined the bound computa
 void boxfilter(img, dx, boxR) 
     psum = prefixsum(img);
     for (i=0; i<H; i++)
-    {
         posL = 0;
         posR = 0;
         for (j=0; j<W; j++)
-        {
             // Bound computation
             dtL = dx(i,j) - boxR;
             dtR = dx(i,j) + boxR;
@@ -83,8 +74,6 @@ void boxfilter(img, dx, boxR)
                    dx(i,posR < dtR )
                 posR++;
             // Boxfilter step
-        }
-    }
 \end{lstlisting}
 
 \subsubsection{Recombination}
@@ -119,9 +108,9 @@ void boxfilter(img, dx, boxR)
         img(ij,i) = sum * invD;
 \end{lstlisting}
 
-\subsubsection{Vectorization}
+\subsubsection{Vectorisation}
 As a last optimisation step we added vectorization. To ensure proper alignment we added a fourth floating point value to the \lstinline{float3} type (listing \ref{code:vec_float3}).
-\begin{lstlisting}[label=Vectorized float3 type, label=code:vec_float3] 
+\begin{lstlisting}[label=Vectorised float3 type, label=code:vec_float3] 
 union float3{
   struct{ float r,g,b,a; };
   __m128 mmvalue;
