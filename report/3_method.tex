@@ -124,7 +124,7 @@ In this optimisation step we tried to combine as many computation as we could in
     img(i,j) = sum * invD;
 \end{lstlisting}
 
-\subsubsection{Write transposed}\label{sec:method:write_transposed}
+\subsubsection{Write transpose}\label{sec:method:write_transposed}
 
 Previously we have transposed the data after each pass of the filter to keep the locality of the computation. However this requires going through the whole image, and by directly storing the data transposed we were able to increase performance and reduce the number of explicit transpositions needed to be computed (listing \ref{code:write_transpose}). 
 \begin{lstlisting}[caption=Write transpose, label=code:write_transpose]
@@ -138,8 +138,16 @@ void boxfilter(img, dx, boxR)
 \end{lstlisting}
 
 \subsubsection{Vectorization}
+As a last optimisation step we added vectorization. To ensure proper alignment we added a fourth floating point value to the \lstinline{float3} type (listing \ref{code:vec_float3}).
+\begin{lstlisting}[label=Vectorized float3 type, label=code:vec_float3] 
+union float3{
+  struct{ float r,g,b,a; };
+  __m128 mmvalue;
+};
+\end{lstlisting}
+The vectorization of the individual operations proved straightforward. The operations on the individual colour values could be replaced with a single vector operation. This also reduced the number instructions in the code and the thus the number of branch misspredictions as measured in VTune.
 
-\subsection{Failed optimization attempts}
+\subsection{Failed optimisation attempts}
 
 \fixme{Rewrite}
 \subsubsection{Precomputation} 
@@ -164,14 +172,14 @@ We tried to store the per pixel color information in three \texttt{unsigned char
 Unfortunately it also increased to the number of operations needed for each operation computed per pixel.  
 This introduced additional conversion overhead for each operation: After loading from memory the char needs to be casted to int and from there to float. Once the computation is completed the floats need to be casted again. 
 
-We felt that the conversion steps proved to much overhead (5 cycles latency per operation) to increase performance next to memory and additional code required.
+We felt that the conversion steps proved to much overhead (5 cycles latency per conversion) to increase performance next to memory and additional code required.
 \comment{
 Apart from changing the precision that would also mean conversion overhead between float and char, as we still need to average over the pixels, which requires floating point operations.
 }
 
 \subsubsection{Blocking}
 
-Unfortunately, one of the most common optimization approaches does not work for the algorithm in question. In general blocking allows to increase cache locality, especially when the block sizes are calculated in a way such that the working set fits in cache. However that also means that the computation for each image pixel should depend on a fixed number of adjacent pixels, which isn't the case for the edge-aware filter.
+Unfortunately, one of the most common optimisation approaches does not work for the algorithm in question. In general blocking allows to increase cache locality, especially when the block sizes are calculated in a way such that the working set fits in cache. However that also means that the computation for each image pixel should depend on a fixed number of adjacent pixels, which isn't the case for the edge-aware filter.
 
 We have gathered statistics on the amount of pixels used for the test images, and these were numbers between $30$ and $150$ pixels. That would mean that our block sizes should be around $150$ pixels, which is too much to be a reasonable size. Also this number may increase up to the whole dimension of the image as the filter bound depend on the image data (for example in the case of a monochrome line in the image with a wide filter window). Smaller block sizes also don't make sense as in that case we would need to re-read information if the filter bound goes outside the block which would mean more overhead. 
 
