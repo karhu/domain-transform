@@ -12,6 +12,15 @@ As in most cases with image (and in particular with video) processing, it is hig
 It is also true that image recording technologies advance and therefore can create images of greater resolution, which means an increase in
 the amount of computation needed for filtering.
 
+\setlength\fboxsep{0pt}
+\setlength\fboxrule{0.5pt}
+ 
+\begin{figure}\vspace{-1mm}
+  \includegraphics[trim=-30mm 0mm 0mm 0mm, clip, width=0.37\textwidth]{figures/input_output}
+  \caption{Example input and output of our Normalized convolution implementation.\label{performance}}
+\end{figure}
+
+
 There exist multiple algorithms that perform this type of filtering, most of which fall into the categories of \textit{Bilateral filtering} and \textit{Anisotropic diffusion}. However most of these suffer either from quality, performance or scalability drawbacks. Moreover, some of them only naturally support grayscale images.
 
 Recently, a new method that promises to solve these problems was prososed by Eduardo S. L. Gastal and Manuel M. Oliveira in their paper \textit{Domain Transform for Edge-Aware Image and Video Processing} ~\cite{GastalOliveira2011DomainTransform}.

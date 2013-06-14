@@ -18,19 +18,19 @@ In order to test and benchmark the code we stored each major benchmark revision 
 
 \subsubsection{Tools and counters used}
 \subsection{Results}
-\begin{figure*}
-    \centering
-    \includegraphics[width=0.85\textwidth]{figures/performance}
-    \caption{Performance plot comparing our different optimisation levels}
-    \label{fig:performance}
-\end{figure*}
 
-\begin{figure*} 
-    \centering
-    \includegraphics[width=0.85\textwidth]{figures/roofline}
-    \caption{Roofline plot showing the performance of our vectorised code. }
-    \label{fig:roofline}
-\end{figure*}
+\setlength\fboxsep{0pt}
+\setlength\fboxrule{0.5pt}
+ 
+\begin{figure}\vspace{-1mm}
+  \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/performance}
+  \caption{Performance plot comparing our different optimisation levels.\label{performance}}
+\end{figure}
+ 
+\begin{figure}\vspace{-1mm}
+  \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/roofline}
+  \caption{Roofline plot showing the performance of our vectorised code.\label{roofline}}
+\end{figure}
 
 \fixme{Write.}
 
