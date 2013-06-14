@@ -1,4 +1,17 @@
 \section{Experimental Results}\label{sec:exp}
+\subsection{Exeperimental Setup}\label{sec:exp_setup8}
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/performance}
+    \caption{Performance plot comparing our different optimisation levels}
+\end{figure*}
+
+\begin{figure*} 
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/roofline}
+    \caption{Roofline plot showing the performance of our vectorised code.}
+\end{figure*}
+
 \fixme{Write.}
 
 \subsection{Experimental setup}
@@ -19,7 +32,7 @@ Then explain what input you used and what range of sizes. The idea is to give en
 Next divide the experiments into classes, one paragraph for each. In the simplest case you have one plot that has the size on the x-axis and the performance on the y-axis. The plot will contain several lines, one for each relevant code version. Discuss the plot and extract the overall performance gain from baseline to best code. Also state the percentage of peak performance for the best code. Note that the peak may change depending on the situation. For example, if you only do additions it would be 12 Gflop/s
 on one core with 3 Ghz and SSE and single precision floating point.
 
-Do not put two performance lines into the same plot if the operations count changed significantly (that's apples and oranges). In that case first perform the optimizations that reduce op count and report the runtime gain in a plot. Then continue to optimize the best version and show performance plots.
+Do not put two performance lines into the same plot if the operations count changed significantly (that's apples and oranges). In that case first perform the optimisations that reduce op count and report the runtime gain in a plot. Then continue to optimise the best version and show performance plots.
 
 {\bf You should}
 \begin{itemize}
