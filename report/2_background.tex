@@ -1,5 +1,4 @@
 \section{Background}\label{sec:background}
-\fixme{Review.}
 
 In this section we will present the necessary background information to follow our implementation of the \textit{Normalized convolution} domain transform filtering algorithm. For a more detailed explanation of the method and its theoretical background, please refer to the original paper~\cite{GastalOliveira2011DomainTransform}.
 
@@ -31,6 +30,7 @@ The following variables are used in Table~\ref{cost_analysis}: $W$ - width of th
 \begin{table}[h]
 \label{cost_analysis}
 \centering
+{\small
 \begin{tabular}{| l | p{3cm} | p{3cm} |} \hline 
 Operation & TransformedDomain BoxFilter  & Filter \\ \hline
 add & $2 \cdot N \cdot 4HW$ & $(8 + 8N)HW$ \\ \hline
@@ -41,7 +41,7 @@ divide & $2 \cdot N \cdot HW$ & $(2HW + 1)N + 1$ \\ \hline
 fabs & $0$ & $6HW$ \\ \hline
 sqrt & $0$ & $3N$ \\ \hline
 powf  & $0$ & $2N$ \\ \hline
-\end{tabular}
+\end{tabular}}
 \caption{Floating point operations performed in the code}
 \end{table}
 

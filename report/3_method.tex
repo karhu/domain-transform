@@ -122,7 +122,6 @@ The vectorization of the individual operations proved straightforward. The opera
 
 \subsection{Failed optimisation attempts}
 
-\fixme{Rewrite}
 \subsubsection{Precomputation} 
 
 Benchmarking the program with Intel VTune showed a high number of floating point division operations executed. Since the box filter computes the inverse of values in the range $[1,\text{image width}-1]$ we precomputed the inverse during compile time. Thus the precomputed values could be looked up by from memory and be used in faster multiplication operations.
