@@ -1,19 +1,17 @@
 \section{Background}\label{sec:background}
 \fixme{Review.}
 
-In this section we will present the necessary background information to follow our implementation of the \textit{Normalized convolution} domain transform filtering algorithm. For a more detailed explanation of the method and its theoretical background, please refer to the original ~\cite{GastalOliveira2011DomainTransform}.
+In this section we will present the necessary background information to follow our implementation of the \textit{Normalized convolution} domain transform filtering algorithm. For a more detailed explanation of the method and its theoretical background, please refer to the original paper~\cite{GastalOliveira2011DomainTransform}.
 
-The general outline of the algorithm is given in Figure \ref{flowchart}. We distinguish two algorithm steps: First the initialisation step, where the domain transform data of the image is computed an stored. Second the iteration step where multiple filter iterations are applied to the image data, using the domain transform information.
+The general outline of the algorithm is given in Figure~\ref{flowchart}. We distinguish two algorithm steps. First is the initialisation step, when the domain transform data of the image is computed and stored. Second is the filtering step, when multiple filter iterations are applied to the image data using the domain transform information.
 
 \subsection{Domain transform}
+The straightforward approach to image blurring is to compute a new value for each image pixel using the weighted average of its neighbourhood. To decide whether a pixel lies in this neighbourhood, some distance measure is necessary. In the case of simple edge unaware blurring (such as applying a Gaussian filter) this distance measure is the spatial distance between image pixels. However to achieve edge-aware image filtering the radiometric distance between pixels (their difference in color) has to be taken into account as well. In general this increases the dimensionality of the problem by adding a dimension for each colour channel.
 
-The straight forward approach to image bluring is to compute a new value for each image pixel using the weighted average of its neighbourhood. To decide whether a pixel lies in this neighbourhood, we need some kind of distance measure. In the case of simple edge unaware bluring (such as applying a Gaussian filter) this distance measure is the spatial distance between image pixels. However to achieve edge-aware image filtering the radiometric distance between pixels (their difference in color) has to be taken into account as well.
-In general this increases the dimensionality of the problem by adding a dimension for each color channel.
+For a RGB color image this would lead to a 5-dimensional space (3 radiometric + 2 spatial dimensions). The domain transform method reduces this dimensionality as follows.
+Firstly, it treats the two spatial dimensions separately, which means that the image is successively filtered along its rows and columns separately. Secondly, it merges the three radiometric dimensions and the remaining one spatial dimension into the one-dimensional space of the domain transform. This transformation retains the necessary distance properties from the original space.
 
-For a RGB color image this would lead to a 5-dimensional space (3 radiometric + 2 spatial dimensions). The domain transform method reduces this dimensionality as follows:
-First, it treats the two spatial dimensions separately. What this means is that the image is separately filtered along its rows and columns. Secondly, it merges the three radiometric dimensions and the remaining one spatial dimension into the one-dimensional space of the domain transform. This transformation retains the necessary distance properties from the original space.
-
-Looking at a single image row, the pixels can be enumerated from left to right as $ p_0 \dots p_n$. Each pixel $p_i$ is associated with a domain transform value $dt_i$ where it holds that $\forall k : dt_k \leq dt_{k+1}$. In other words, the series of domain transform values is monotonically increasing. The exact difference between two consecutive domain transform values depends on the pixels spatial and radiometric distance.
+Looking at a single image row, the pixels can be enumerated from left to right as $ p_0 \dots p_n$. Each pixel $p_i$ is associated with a domain transform value $dt_i$, and it holds that $\forall k : dt_k \leq dt_{k+1}$. In other words, the series of domain transform values is monotonically increasing. The exact difference between two consecutive domain transform values depends on the spatial and radiometric distance between pixels.
 
 This data is computed and stored for all image rows and all image columns.
 
@@ -23,15 +21,29 @@ For the filtering step, multiple (usually three) filtering iterations are applie
 
 Filtering happens using a box filter. This means that a pixels new value is the uniform average of the pixels in its neighbourhood. For a single pixel $p_i$ this neighbourhood consists of all pixels $p_k$ for which it both holds that $dt_k < dt_i+r$ and $dt_k > dt_i-r$, where $r$ is the filtering radius that changes from iteration to iteration. The size of this neighbourhood can vary significantly between pixels and strongly depends on the input image.
 
-The use of a box filter might first look like a severe restriction as usually a gaussian filter response is preferable. However the multiple consecutive iterations of box filtering produce a gaussian like fitlering response.
+The use of a box filter might first look like a severe restriction as usually a Gaussian filter response is preferable. However the multiple consecutive iterations of box filtering in fact produce a Gaussian like filtering response.
 
 \subsection{Cost Analysis}
-In asymptotic terms, the algorithm has a complexity of \BigO{n}, which makes it already very competitive with other approaches to edge-aware image filtering. For optimization purposes we are however interested in a more thorough cost analysis of the method. Therefore we have counted the number of different floating point operations executed by the algorithm:
+In asymptotic terms, the algorithm has a complexity of \BigO{n}, which makes it already very competitive with other approaches to edge-aware image filtering. For optimization purposes we are however interested in a more thorough cost analysis of the method. Therefore we have counted the number of different floating point operations executed by the implementation, the numbers can be seen in Table~\ref{cost_analysis}. These numbers were used for performance computations and analysis in the course of optimisation.
 
-\fixme{add counted flop counts etc}
+The following variables are used in Table~\ref{cost_analysis}: $W$ - width of the processed image, $H$ - height of the processed image, $N$ - number of filtering iteration. \\ \lstinline{TransformedDomainBoxFilter} is the filtering function which executes one pass through the image in one direction. \lstinline{Filter} is the main method called on the whole image. It includes all necessary precomputation and multiple iterations of the filter itself.
 
-\setlength\fboxsep{0pt}
-\setlength\fboxrule{0.5pt}
+\begin{table}[h]
+\label{cost_analysis}
+\centering
+\begin{tabular}{| l | p{3cm} | p{3cm} |} \hline 
+Operation & TransformedDomain BoxFilter  & Filter \\ \hline
+add & $2 \cdot N \cdot 4HW$ & $(8 + 8N)HW$ \\ \hline
+subtract & $2 \cdot N \cdot 4HW$ & $(6 + 8N)HW$ \\ \hline
+compare & $2 \cdot  N \cdot 4HW$ & $(8N)HW$ \\ \hline
+multiply & $2 \cdot N \cdot 3HW$ & $(2 + 6N)HW + 3N$ \\ \hline
+divide & $2 \cdot N \cdot HW$ & $(2HW + 1)N + 1$ \\ \hline
+fabs & $0$ & $6HW$ \\ \hline
+sqrt & $0$ & $3N$ \\ \hline
+powf  & $0$ & $2N$ \\ \hline
+\end{tabular}
+\caption{Floating point operations performed in the code}
+\end{table}
 
 \begin{figure}\vspace{-1mm}
   \includegraphics[trim=10mm 145mm 100mm 10mm, clip, width=0.48\textwidth]{figures/flowchart.pdf}
