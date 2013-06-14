@@ -1,15 +1,12 @@
 \begin{abstract}
 \fixme{Review and shorten}
 
-Edge-aware filtering can be used as a basic building block for many image processing tasks, for example colourisation of black and white images. However most of the algorithms existing for this task are unusable in real time as they require an extensive amount of complex computation.
+Edge-aware filtering can be used as a basic building block for many image processing tasks. In this field of research the recent publication \textit{Domain Transform for Edge-Aware Image and Video Processing} ~\cite{GastalOliveira2011DomainTransform} introduces a new and promising algorithm. 
 
-This report discusses one of the fastest algorithms for such edge-aware filtering, which can be executed in linear time w.r.t. the number of pixels in the image. It uses a mapping (domain transform) from 5D image space (2 spatial dimensions and 3 colours) to 1D real space and an iterative approach to approximate the filtered image with sufficient precision.
+At the time of writing of this report, the only publicly avaiable implementation of this method is a Matlab version provided by the papers authors.
 
-In this report we describe the optimisation approaches which we used in order to further improve performance of this algorithm. We also provide a discussion of reasoning for several optimisation approaches which did not yield a significant increase in performance.
-
-The baseline version of the implementation - the starting point for our optimisation - is a direct port of the matlab code provided by the authors of the algorithm. It precomputes values necessary for the filter, then alternates filter passes horizontally and vertically across the image while transposing the data representation between passes.
-
-Overall after inlining and combining as many computation as possible, changing the image saving approach to writing in a fashion that can directly be read on the next iteration, and some vectorisation we managed to increase the performance of the code approximately $2$ times w.r.t. the baseline implementation, which is a good factor as the algorithm is rather efficient in the first place. Optimisation potential still exists as we are far from both memory and computation bounds, however neither of our further optimisation attempts got us closer to these bounds.
+The goal of this project is to provide a performant C/C++ implementation of the aforementioned method, while documenting and discussing both our successfull and failed optimisation approaches.
+Starting with a direct port of the Matlab code, we apply various optimisations to achieve an approximate $2$ times speedup with regard to our base version. Optimisation potential still exists as we are far from both memory and computation bounds, however neither of our further optimisation attempts get us closer to these bounds. 
 
 \comment{
 Describe in concise words what you do, why you do it (not necessarily
