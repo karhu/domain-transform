@@ -1,6 +1,6 @@
 \section{Experimental Results}\label{sec:exp}
 \subsection{Experimental Setup}\label{sec:exp_setup8}
-In order to test and benchmark the code we stored each major benchmark revision in a separate folder. Then we run a script that compiled the code and benchmarked it against $4$ different image sizes (figure \ref{tab:images}). The image sizes were chosen in such a way that they represent real world applications used in an image processing or video processing software.
+In order to test and benchmark the code we stored each major benchmark revision in a separate folder. Then we run a script that compiled the code and benchmarked it against $5$ different image sizes (figure \ref{tab:images}). The image sizes were chosen in such a way that they represent real world applications used in an image processing or video processing software.
 \begin{figure}
 \centering
 \begin{tabular}{rll}
@@ -16,8 +16,9 @@ In order to test and benchmark the code we stored each major benchmark revision 
 \end{figure}
 
 \subsubsection{Platform}
-
+Benchmarking was done on a Ubuntu Linux 12.10 running on a Intel Core i7-3610QM "Ivy Bridge" CPU. In order to generate repeat reproducible results the CPU frequency was fixed. To $2.3$ GHz.
 \subsubsection{Tools and counters used}
+The code was both compiled and executed on GCC 4.6.4 and ICC 13.1.2.183 64bit using the compiler flags \lstinline{-O3 -march=corei7}. In the results shown we only show results obtained with GCC since the ICC results show the same performance measurements.
 \subsection{Results}
 pro
 \setlength\fboxsep{0pt}
