@@ -28,7 +28,6 @@ In asymptotic terms, the algorithm has a complexity of \BigO{n}, which makes it 
 The following variables are used in Table~\ref{cost_analysis}: $W$ - width of the processed image, $H$ - height of the processed image, $N$ - number of filtering iteration. \\ \lstinline{TransformedDomainBoxFilter} is the filtering function which executes one pass through the image in one direction. \lstinline{Filter} is the main method called on the whole image. It includes all necessary precomputation and multiple iterations of the filter itself.
 
 \begin{table}[h]
-\label{cost_analysis}
 \centering
 {\small
 \begin{tabular}{| l | p{3cm} | p{3cm} |} \hline 
@@ -42,7 +41,7 @@ fabs & $0$ & $6HW$ \\ \hline
 sqrt & $0$ & $3N$ \\ \hline
 powf  & $0$ & $2N$ \\ \hline
 \end{tabular}}
-\caption{Floating point operations performed in the code}
+\caption{Floating point operations performed in the code\label{cost_analysis}}
 \end{table}
 
 \begin{figure}\vspace{-1mm}
