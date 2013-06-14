@@ -3,6 +3,7 @@
 In order to test and benchmark the code we stored each major benchmark revision in a separate folder. Then we run a script that compiled the code and benchmarked it against $5$ different image sizes (figure \ref{tab:images}). The image sizes were chosen in such a way that they represent real world applications used in an image processing or video processing software. The images \texttt{bhudda\_200.png} and \texttt{bhudda\_300.png} have been chosen since both fit into the L3 cache. 
 \begin{figure}
 \centering
+{\small
 \begin{tabular}{rll}
 \textbf{Image} & \textbf{Size}\\
 \texttt{bhudda\_200.png} & $0.02$ & Megapixel\\
@@ -11,6 +12,7 @@ In order to test and benchmark the code we stored each major benchmark revision 
 \texttt{bhudda\_720p.png} & $0.92$ & Megapixel\\
 \texttt{bhudda\_1080p.png} & $2.07$ & Megapixel\\
 \end{tabular}
+}
 \caption{Images used for benchmarking}
 \label{tab:images}
 \end{figure}
@@ -27,12 +29,12 @@ We were able to achieve a speedup of $1.98$ for the cache based image \texttt{bh
 \setlength\fboxsep{0pt}
 \setlength\fboxrule{0.5pt}
  
-\begin{figure}\vspace{-5mm}
+\begin{figure}\vspace{-10mm}
   \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/performance}
   \caption{Performance plot comparing our different optimisation levels. Compiler: GCC 4.6.4, flags: \lstinline{-O3 -march=corei7}.\label{performance}}
 \end{figure}
  
-\begin{figure}\hspace{-5mm}
+\begin{figure}\vspace{-6mm}\hspace{-5mm}
 %  \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/roofline}
   \includegraphics[width=0.55\textwidth]{figures/roofline}
   \caption{Roofline plot showing the performance of our vectorised code. Compiler: GCC 4.6.4, flags: \lstinline{-O3 -march=corei7}.\label{roofline}}
