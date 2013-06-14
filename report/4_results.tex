@@ -1,31 +1,45 @@
 \section{Experimental Results}\label{sec:exp}
-\subsection{Exeperimental Setup}\label{sec:exp_setup8}
+\subsection{Experimental Setup}\label{sec:exp_setup8}
+In order to test and benchmark the code we stored each major benchmark revision in a separate folder. Then we run a script that compiled the code and benchmarked it against $4$ different image sizes (figure \ref{tab:images}). The image sizes were chosen in such a way that they represent real world applications used in an image processing or video processing software.
+\begin{figure}
+\centering
+\begin{tabular}{rll}
+\textbf{Image} & \textbf{Size}  &\textbf{Megapixel}\\
+\texttt{bhudda\_200.png} & $200x100$ & $0.2$\\
+\texttt{bhudda\_640.png} & $640x420$ & pixel\\
+\texttt{bhudda\_1024.png} & $1024x683$ & pixel\\
+\texttt{bhudda\_2048.png} & $2048x1364$ & pixel\\
+\end{tabular}
+\caption{Images used for benchmarking}
+\label{tab:images}
+\end{figure}
 
+\subsubsection{Platform}
+
+\subsubsection{Tools and counters used}
+\subsection{Results}
 \begin{figure*}
     \centering
     \includegraphics[width=0.85\textwidth]{figures/performance}
     \caption{Performance plot comparing our different optimisation levels}
+    \label{fig:performance}
 \end{figure*}
 
 \begin{figure*} 
     \centering
     \includegraphics[width=0.85\textwidth]{figures/roofline}
-    \caption{Roofline plot showing the performance of our vectorised code.}
+    \caption{Roofline plot showing the performance of our vectorised code. }
+    \label{fig:roofline}
 \end{figure*}
 
 \fixme{Write.}
-
-\subsection{Experimental setup}
-\subsubsection{Platform}
-\subsubsection{Tools and counters used}
-\subsection{Results}
 
 \comment{
 Here you evaluate your work using experiments. You start again with a
 very short summary of the section. The typical structure follows.
 
 \mypar{Experimental setup} Specify the platform (processor, frequency, cache sizes)
-as well as the compiler, version, and flags used. I strongly recommend that you play with optimization flags and consider also icc for additional potential speedup.
+as well as the compiler, version, and flags used. I strongly recommend that you play with optimisation flags and consider also icc for additional potential speedup.
 
 Then explain what input you used and what range of sizes. The idea is to give enough information so the experiments are reproducible by somebody else on his or her code.
 
