@@ -24,7 +24,7 @@ Filtering happens using a box filter. This means that a pixels new value is the 
 The use of a box filter might first look like a severe restriction as usually a Gaussian filter response is preferable. However the multiple consecutive iterations of box filtering in fact produce a Gaussian like filtering response.
 
 \subsection{Cost Analysis}
-In asymptotic terms, the algorithm has a complexity of \BigO{n}, which makes it already very competitive with other approaches to edge-aware image filtering. For optimization purposes we are however interested in a more thorough cost analysis of the method. Therefore we have counted the number of different floating point operations executed by the implementation, the numbers can be seen in Table~\ref{cost_analysis}.
+In asymptotic terms, the algorithm has a complexity of \BigO{n}, which makes it already very competitive with other approaches to edge-aware image filtering. For optimization purposes we are however interested in a more thorough cost analysis of the method. Therefore we have counted the number of different floating point operations executed by the implementation, the numbers can be seen in Table~\ref{cost_analysis}. These numbers were used for performance computations and analysis in the course of optimisation.
 
 The following variables are used in Table~\ref{cost_analysis}: $W$ - width of the processed image, $H$ - height of the processed image, $N$ - number of filtering iteration. \\ \lstinline{TransformedDomainBoxFilter} is the filtering function which executes one pass through the image in one direction. \lstinline{Filter} is the main method called on the whole image. It includes all necessary precomputation and multiple iterations of the filter itself.
 
