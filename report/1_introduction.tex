@@ -15,7 +15,7 @@ the amount of computation needed for filtering.
  
 \begin{figure}\vspace{-1mm}
   \includegraphics[trim=-30mm 0mm 0mm 0mm, clip, width=0.37\textwidth]{figures/input_output}
-  \caption{Sample input and output of our Normalized convolution implementation.\label{performance}}
+  \caption{Sample input and output of our Normalized convolution implementation.\label{sample}}
 \end{figure}
 
 
@@ -25,7 +25,7 @@ Recently, a new method that promises to solve these problems was prososed by Edu
 
 This publication gives an in depth explanation of the theoretical foundations of the technique as well as presenting three different implementation approaches. These three approaches are called \textit{Normalized convolution} (NC), \textit{Interpolated convolution} (IC) and \textit{Recursive filtering} (RF).
 
-So far the only publicly available implementation of these methods is done in MATLAB, published on the original papers homepage. While useful for verification and demonstration purposes, its runtime performance is far from optimal. The work presented here aims at providing an optimized implementation of the \textit{Normalized convolution} variant of the algorithm on the CPU while documenting the optimization process. We have implemented the algorith in C/C++ and proceeded to use the techniques described in the \textit{How to Write Fast Numerical Code} course~\cite{HowToFastNumCode:2013:Webpage} to improve its performance.
+So far the only publicly available implementation of these methods is done in MATLAB, published on the original papers homepage. While useful for verification and demonstration purposes, its runtime performance is far from optimal. The work presented here aims at providing an optimized implementation of the \textit{Normalized convolution} variant of the algorithm on the CPU while documenting the optimization process. We have implemented the algorithm in C/C++ and proceeded to use the techniques described in the \textit{How to Write Fast Numerical Code} course~\cite{HowToFastNumCode:2013:Webpage} to improve its performance. Example input and output of our implementation can be seen in Figure~\ref{sample}.
 
 \comment{Do not start the introduction with the abstract or a slightly modified
 version. It follows a possible structure of the introduction. 
