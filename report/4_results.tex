@@ -1,32 +1,47 @@
 \section{Experimental Results}\label{sec:exp}
-\subsection{Exeperimental Setup}\label{sec:exp_setup8}
+\subsection{Experimental Setup}\label{sec:exp_setup8}
+In order to test and benchmark the code we stored each major benchmark revision in a separate folder. Then we run a script that compiled the code and benchmarked it against $5$ different image sizes (figure \ref{tab:images}). The image sizes were chosen in such a way that they represent real world applications used in an image processing or video processing software.
+\begin{figure}
+\centering
+\begin{tabular}{rll}
+\textbf{Image} & \textbf{Size}\\
+\texttt{bhudda\_200.png} & $0.02$ & Megapixel\\
+\texttt{bhudda\_320.png} & $0.07$ & Megapixel\\
+\texttt{bhudda\_640.png} & $0.26$ & Megapixel\\
+\texttt{bhudda\_720.png} & $0.92$ & Megapixel\\
+\texttt{bhudda\_1080p.png} & $2.07$ & Megapixel\\
+\end{tabular}
+\caption{Images used for benchmarking}
+\label{tab:images}
+\end{figure}
 
+\subsubsection{Platform}
+Benchmarking was done on a Ubuntu Linux 12.10 running on a Intel Core i7-3610QM "Ivy Bridge" CPU. In order to generate repeat reproducible results the CPU frequency was to $2.3$ GHz with Turbo Boost disabled.
+\subsubsection{Tools and counters used}
+The code was both compiled and executed on GCC 4.6.4 and ICC 13.1.2.183 64bit. We found that the compiler flags \lstinline{-O3 -march=corei7} produced optimal results in our case. In the results shown we only show results obtained with GCC since the ICC results show the same performance measurements. We noticed that code generated with the compiler flags \lstinline{-O3 -march=corei7-avx} was slower. Since the compiler used the \lstinline{vaddps} instruction with 3 input values. Whereas the \lstinline{-O3 -march=corei7} only add the \lstinline{addps} instruction which uses 2 input values and thus reduces the code size and helps with branch miss predictions since there's less code to load. 
+\subsection{Results}
+pro
 \setlength\fboxsep{0pt}
 \setlength\fboxrule{0.5pt}
  
 \begin{figure}\vspace{-1mm}
   \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/performance}
-  \caption{Performance plot comparing our different optimisation levels.\label{performance}}
+  \caption{Performance plot comparing our different optimisation levels. Compiler: GCC 4.6.4, flags: \lstinline{-O3 -march=corei7}.\label{performance}}
 \end{figure}
  
 \begin{figure}\vspace{-1mm}
   \includegraphics[trim=10mm 0mm 10mm 0mm, clip, width=0.49\textwidth]{figures/roofline}
-  \caption{Roofline plot showing the performance of our vectorised code.\label{roofline}}
+  \caption{Roofline plot showing the performance of our vectorised code. Compiler: GCC 4.6.4, flags: \lstinline{-O3 -march=corei7}.\label{roofline}}
 \end{figure}
 
 \fixme{Write.}
-
-\subsection{Experimental setup}
-\subsubsection{Platform}
-\subsubsection{Tools and counters used}
-\subsection{Results}
 
 \comment{
 Here you evaluate your work using experiments. You start again with a
 very short summary of the section. The typical structure follows.
 
 \mypar{Experimental setup} Specify the platform (processor, frequency, cache sizes)
-as well as the compiler, version, and flags used. I strongly recommend that you play with optimization flags and consider also icc for additional potential speedup.
+as well as the compiler, version, and flags used. I strongly recommend that you play with optimisation flags and consider also icc for additional potential speedup.
 
 Then explain what input you used and what range of sizes. The idea is to give enough information so the experiments are reproducible by somebody else on his or her code.
 
