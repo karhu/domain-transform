@@ -5,9 +5,9 @@ In this report we presented a summary of optimization strategies for an edge pre
 
 During the course of optimization we got rid of the primitive bottleneck which was the matrix transpose, by writing the data in transposed fashion directly. This allowed us to focus on the iterative part of the algorithm.
 
-The way data is processed gives natural spatial locality and also instruction level paralellism, as 3 colour channels are stored contiguously but computed independently. This is also the reason why manual vectorization didn't give any performance improvement, as the pipeline of computation was already filled as much as the data allows.
+The way data is processed gives natural spatial locality and also instruction level paralellism, as 3 colour channels are stored contiguously but computed independently. However this can only be leveraged either by better instruction pipeline usage or vector instructions as discussed earlier. 
 
-We have attempted to analyze the performance bound of our code using roofline plots. However our fastest version is neither memory or compute bound, as we can see from the plot. This probably means that we are bound by some other factor. \comment{which we have no idea what it is :b}
+We have attempted to analyze the performance bound of our code using roofline plots (see Figure \ref{roofline}). According to this, our fastest version is neither memory or compute bound. This probably means that we are bound by some other unfortunately unidentified factor. 
 
 \comment{
 Here you need to briefly summarize what you did and why this is
