@@ -8,7 +8,7 @@ This section describes the baseline implementation of the algorithm and the opti
 Our baseline implementation is a straightforward port to C++ of the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors of the paper describing the algorithm~\cite{GastalOliveira2011DomainTransform}.
 
 \fixme{?}
-In order to achieve the biggest optimisation potential the matrices have been wrapped in a simple struct (listing \ref{code:matrix_struct}).
+In order to achieve the biggest optimisation potential the matrices have been wrapped in a simple struct (listing \ref{code:matrix_struct}). This allows us to directly operate on the indices of the individual elements.
 
 \begin{lstlisting}[caption=Matrix struct,label=code:matrix_struct]
 struct Mat2
@@ -76,13 +76,14 @@ for (yo=0; yo<Hmod; yo+=BLOCK)
         out.data[idxT] = in.data[idx];
 // Handle bottom row and bottom rightmost block
 \end{lstlisting}
+Doing a transpose directly into a second array proved to be better than doing the transpose directly in the same image.
 
 \subsubsection{Inlining Bound Computation}
 
 In order to allow the compiler to optimise the code we inlined the bound computation, which also allowed us to spare an additional pass through the data.
 
 \begin{lstlisting}[caption=Inlining of the bound computation, label=code:inlining]
-void boxfilter(img, dx, boxR) {
+void boxfilter(img, dx, boxR) 
     psum = prefixsum(img);
     for (i=0; i<H; i++)
     {
@@ -123,24 +124,37 @@ In this optimisation step we tried to combine as many computation as we could in
     img(i,j) = sum * invD;
 \end{lstlisting}
 
-\subsubsection{Write transpose}
+\subsubsection{Write transposed}\label{sec:method:write_transposed}
 
-Previously we have transposed the data after each pass of the filter to keep the locality of the computation. However this requires going through the whole image, and by directly storing the data transposed we were able to increase performance and reduce the number of explicit transpositions needed to be computed. 
+Previously we have transposed the data after each pass of the filter to keep the locality of the computation. However this requires going through the whole image, and by directly storing the data transposed we were able to increase performance and reduce the number of explicit transpositions needed to be computed (listing \ref{code:write_transpose}). 
+\begin{lstlisting}[caption=Write transpose, label=code:write_transpose]
+void boxfilter(img, dx, boxR) 
+    for (i=0; i<H; i++)
+        for (j=0; j<W; j++)
+        // Prefix Sum & Bounding Step
+        // Boxfilter step
+        invD = 1.0f /(posR-posL);
+        img(ij,i) = sum * invD;
+\end{lstlisting}
 
-\fixme{finish}
-
-We note that 
 
 \subsection{Failed optimization attempts}
 
 \fixme{Rewrite}
 \subsubsection{Precomputation} 
 
-For each pixel we compute the filter bounds on the fly, which then determines the size of the box filter window. We then compute the average of all pixels in this window, which includes a divison by the number of pixels in the window. This window size can vary a lot between pixels, however it is bounded by the larger of the two image dimensions.
+Benchmarking the program with Intel VTune showed a high number of floating point division operations executed. Since the box filter computes the inverse of values in $[1,\text{image width}-1]$ we precomputed the inverse during compile time. Thus the precomputed values could be looked up by simple memory lookup. 
 
-For this reason we precomputed a table of the inverses of all possible division factors and replaced the costly division by a much cheaper multiplication operation.
+Using precomputed values in the range of $[1,100]$ returned the better performance than precomputing all values. Unfortunately the performance attempt didn't bring any performance improvements compared to the method discussed in section \ref{sec:method:write_transposed}.
 
-This did not give a performance increase which might be due to several factors. Firstly it might be that such precomputed values already exist, as these rather small factors which might be used a lot. Or, secondly, it is possible that there was some increase in performance, but this was unnoticeable because the additional array accesses caused more cache misses, and, consequently, more overhead.
+%By precomputing the inverse for all possible values  at compile time and then 
+%
+%For each pixel we compute the filter bounds on the fly, which then determines the size of the box filter window. We then compute the average of all pixels in this window, which includes a divison by the number of pixels in the window. This window size can vary a lot between pixels, however it is bounded by the larger of the two image dimensions.
+%
+%For this reason we precomputed a table of the inverses of all possible division factors and replaced the costly division by a much cheaper multiplication operation.
+
+This might be due to several factors:
+Firstly it might be that such precomputed values already exist, as these rather small factors which might be used a lot and the time needed to lookup large values outweigh the time needed for computing the divisions on the fly. Or, secondly, it is possible that there was some increase in performance, but this was unnoticeable because the additional array accesses caused more cache misses, and, consequently, more overhead.
 
 \subsubsection{Changing image storage datatype}
 
