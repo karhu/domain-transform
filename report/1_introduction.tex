@@ -1,43 +1,24 @@
 \section{Introduction}\label{sec:intro}
 \fixme{Review}
 
-Filtering operations are often a crucial step of image processing and a particular sub-category of these are edge-aware smoothing filters. 
+Filtering operations are often a crucial step of image processing and a particular sub-group of these are edge-aware smoothing filters. 
 They are used as a basic building block for multiple other applications.
 For example, such filters can be used to extract or remove features from an
 image, to colorize the image in a intuitive fashion by colouring specific
-items on an image, as well as perform other tasks such as noise removal and
-image compression.
+items on an image, or to perform other tasks such as noise removal and
+image compression ~\cite{GastalOliveira2011DomainTransform}.
 
-As in most cases with image (and in particular with video) processing, it is
-highly required that the filters have a low computational cost and therefore
-can produce fast results, especially when used for real-time transformation of
-graphical data. It is also true that image recording technologies advance and 
-therefore can create images of greater resolution, which means an increase in
-the amount of computation needed for filtering. And lastly images are 2D data
-and will have to be processed both horizontally and vertically, which makes
-spatial locality troublecome.
+As in most cases with image (and in particular with video) processing, it is highly required that the filters have a low computational cost and therefore can produce fast results. This is desireable to allow for real-time transformation of video streams as well as immediate feedback during image editing and in general when working on large datasets. 
+It is also true that image recording technologies advance and therefore can create images of greater resolution, which means an increase in
+the amount of computation needed for filtering.
 
-There exist multiple algorithms that perform this type of filtering, however
-most of these are computationally heavy and almost impossible to execute in
-real-time. Moreover, some of those only naturally support grayscale images. \fixme{should we add references here?}
-For this project we have picked one of the fastest known algorithms for the
-task in question, which works on full RGB images.
+There exist multiple algorithms that perform this type of filtering, most of which fall into the categories of \textit{Bilateral filtering} and \textit{Anisotropic diffusion}. However most of these suffer either from quality, performance or scalability drawbacks. Moreover, some of them only naturally support grayscale images.
 
-The main idea of this fast approach is to use a domain transformation on the
-image which allows to reduce the dimensionality of the data. An RGB image in
-essence is a 2D manifold in 5D space, and an edge-preserving filter can be
-defined in lower dimensions as long as the 5D distances among the pixels are
-preserved. The transformation defines an isometry between curves on the 2D
-manifold and the real line. It preserves the geodesic distance between points
-on the curve wrapping the image into two 1D domains, one for horizontal 
-distances and one for vertical. Then a 1D edge-preserving filter can be ran on
-this transformed domain.
+Recently, a new method that promises to solve these problems was prososed by Eduardo S. L. Gastal and Manuel M. Oliveira in their paper \textit{Domain Transform for Edge-Aware Image and Video Processing} ~\cite{GastalOliveira2011DomainTransform}.
 
-The work presented here aims at optimizing the implementation of on of the 
-more sophisticated algorithm versions on the CPU. The only publicly available
-implementation of it is in MATLAB, and is useless for fast prosessing of image
-data. We have implemented the algorith in C/C++ and proceeded to use the
-techniques described in the course to improve its performance.
+This publication gives an in depth explanation of the theoretical foundations of the technique as well as presenting three different implementation approaches. These three approaches are called \textit{Normalized convolution} (NC), \textit{Interpolated convolution} (IC) and \textit{Recursive filtering} (RF).
+
+So far the only publicly available implementation of these methods is done in MATLAB, published on the original papers homepage. While useful for verification and demonstration purposes, its runtime performance is far from optimal. The work presented here aims at providing an optimized implementation of the \textit{Normalized convolution} variant of the algorithm on the CPU while documenting the optimization process. We have implemented the algorith in C/C++ and proceeded to use the techniques described in the \textit{How to Write Fast Numerical Code} course ~\cite{HowToFastNumCode:2013:Webpage} to improve its performance.
 
 \comment{Do not start the introduction with the abstract or a slightly modified
 version. It follows a possible structure of the introduction. 

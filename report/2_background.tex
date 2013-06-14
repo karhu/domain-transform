@@ -1,9 +1,7 @@
 \section{Background: Whatever the Background is}\label{sec:background}
-\fixme{Write.}
+\fixme{Review.}
 
-The original publication on the Domain Transform Filtering Technique ~\cite{GastalOliveira2011DomainTransform} gives  an in depth explanation of the theoretical foundations of the technique as well as presenting three different implementation approaches. These three approaches are called "Normalized convolution" (NC), "Interpolated convolution" (IC) and "Recursive filtering" (RF). 
-
-In this section we will present the necessary background information to follow our implementation of the first of these three algorithms, namely "Normalized convolution". For a more detailed explanation of the method and it's background, please refer to the original publication.
+In this section we will present the necessary background information to follow our implementation of the \textit{Normalized convolution} domain transform filtering algorithm. For a more detailed explanation of the method and its theoretical background, please refer to the original ~\cite{GastalOliveira2011DomainTransform}.
 
 The straight forward approach to image bluring is to compute a new value for each image pixel using the weighted average of its neighbourhood. To decide whether a pixel lies in this neighbourhood, we need some kind of distance measure. In the case of simple edge unaware bluring (such as applying a Gaussian filter), this distance measure is the spatial distance between image pixels. However to achieve edge-aware image filtering the radiometric distance between pixels (their difference in color) has to be taken into account as well.
 In general this increases the dimensionality of the problem by adding a dimension for each color channel.
