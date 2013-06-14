@@ -6,6 +6,8 @@ This section describes the baseline implementation of the algorithm and the opti
 \subsection{Baseline version}
 
 Our baseline implementation is a straightforward port to C++ of the Matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors of the paper describing the algorithm~\cite{GastalOliveira2011DomainTransform}.
+
+\comment{
 \begin{lstlisting}[caption=Matrix struct,label=code:matrix_struct]
 struct Mat2
 {
@@ -13,6 +15,7 @@ struct Mat2
     float3* data; // size: width*height
 };
 \end{lstlisting}
+}
 
 In order to preserve the precision of calculations all images are store using a \lstinline{float3} struct, which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
 
