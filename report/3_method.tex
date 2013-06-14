@@ -1,11 +1,11 @@
 %\section{Your Proposed Method}\label{sec:method}
 \section{Optimizing Domain Transform}
 
-This section describes the baseline implementation of the algorithm and the optimisation steps we executed that made a significant impact on the performance of the code. Finally the section also describes the optimisation approaches we tried to use, which did not result in a significant performance improvement, and discuss why it might be the case for our algorithm.
+This section describes the baseline implementation of the algorithm and the optimisation steps we executed that made a significant impact on the performance of the code. Finally the section also describes and discusses further optimisation approaches that were tried out and discarded because they didn't lead to a performance improvement.
 
 \subsection{Baseline version}
 
-Our baseline implementation is a straightforward port to C++ of the matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors of the paper describing the algorithm~\cite{GastalOliveira2011DomainTransform}.
+Our baseline implementation is a straightforward port to C++ of the Matlab code provided on the homepage\footnote{\url{http://www.inf.ufrgs.br/~eslgastal/DomainTransform/}} of the authors of the paper describing the algorithm~\cite{GastalOliveira2011DomainTransform}.
 \begin{lstlisting}[caption=Matrix struct,label=code:matrix_struct]
 struct Mat2
 {
@@ -14,11 +14,11 @@ struct Mat2
 };
 \end{lstlisting}
 
-In order to preserve the precision of calculations all images are store in a \lstinline{float3} struct, which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
+In order to preserve the precision of calculations all images are store using a \lstinline{float3} struct, which uses $3\times 4 = 12$ bytes per pixel. Hence a $1$M pixel image is stored in $3\times 4\times 10^6$\ B $=12$\ MB.
 
 The algorithm starts with some initialisation procedures. During initialisation two matrices - $dIdx$ and $dIdy$ - are precomputed, which contain the differentials of the neighbouring image pixels in both $x$ and $y$ directions. Afterwards a prefix sum is computed for both $dIdx$ and $dIdy^T$, creating matrices which in fact contain for each pixel a mapping into 1D coordinate space along each direction.
 
-During the filtering step (see listing~\ref{code:filterstep}) we compute \texttt{compute\ Bound} and \texttt{boxFilter} twice. After each computation step we transpose the images.
+During the filtering step (see listing~\ref{code:filterstep}) we compute \texttt{comp\-ute\ Bound} and \texttt{boxFilter} twice. After each computation step we transpose the images.
 
 \begin{lstlisting}[caption=Filterstep,label=code:filterstep]
 for (i=0; i<iterations; i++)
@@ -30,9 +30,9 @@ for (i=0; i<iterations; i++)
     img = transpose(img);
 \end{lstlisting}
 
-The \lstinline{computeBound} method computes the 1D bound for each pixel for the box filter, which is dependent on the predefined filter radius. 
+The \lstinline{computeBound} method computes the 1D upper and lower bound for the box filter of each pixel, which is dependent on the predefined filter radius. 
 
-Box filter specific initialisation is executed before the actual box filter when the prefix sum of the pixel values is precomputed for further use. This cannot be done once for the whole algorithm and needs to be recomputed, as the pixel values change during execution. Then the \lstinline{boxFilter} makes use of the previously computed prefix sum and filter bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
+Before the actual application of the box filter, a prefix sum over the image pixels is computed. This cannot be done once for the whole algorithm and needs to be recomputed, as the pixel values change between iterations. Then the \lstinline{boxFilter} makes use of the previously computed prefix sum and filter bounds to compute the filtered value for each pixel (listing \ref{code:boxfilter}).
 
 \begin{lstlisting}[caption=Boxfilter step, label=code:boxfilter]
 void boxfilter(img, bounds) 
@@ -54,7 +54,7 @@ After benchmarking the initial version we recognised that the transpose function
 
 \subsubsection{Inlining Bound Computation}
 
-In order to allow the compiler to optimise the code we inlined the bound computation, which also allowed us to spare an additional pass through the data.
+In order to allow the compiler to optimise the code we inlined the bound computation, which also allowed us to spare an additional pass through the data and thus reduce memory reads and writes.
 
 \begin{lstlisting}[caption=Inlining of the bound computation, label=code:inlining]
 void boxfilter(img, dx, boxR) 
@@ -77,7 +77,7 @@ void boxfilter(img, dx, boxR)
 
 \subsubsection{Recombination}
 
-In this optimisation step we tried to combine as many computation as we could in as few passes through the data as possible. We rearranged the initialisation step to conform to that idea, and inlined the prefix sum computation into the \lstinline{boxFilter} bound computation step, getting a sliding window approach (listing~\ref{code:recombination}).
+In this optimisation step we tried to combine as many computation operations as possible in as few passes through the data as possible. We rearranged the initialisation step to conform to that idea, and inlined the prefix sum computation into the \lstinline{boxFilter} bound computation step, getting a sliding window approach (listing~\ref{code:recombination}). This changes renders the prefix sum computation unnecessary as the sum of the values in the box filter window are now computed on the fly incrementally.
 
 \begin{lstlisting}[caption=Recombination, label=code:recombination]
     while (dx(i,posL) < dtL 
@@ -96,7 +96,7 @@ In this optimisation step we tried to combine as many computation as we could in
 
 \subsubsection{Write transpose}\label{sec:method:write_transposed}
 
-Previously we have transposed the data after each pass of the filter to keep the locality of the computation. However this requires going through the whole image, and by directly storing the data transposed we were able to increase performance and reduce the number of explicit transpositions needed to be computed (listing \ref{code:write_transpose}). 
+Previously we explicitly transposed the data after each pass of the filter to keep the locality of the computation. However this requires an additional pass through the whole image data. By instead directly storing the data transposed we were able to further increase performance (listing \ref{code:write_transpose}). 
 \begin{lstlisting}[caption=Write transpose, label=code:write_transpose]
 void boxfilter(img, dx, boxR) 
     for (i=0; i<H; i++)
@@ -104,7 +104,7 @@ void boxfilter(img, dx, boxR)
         // Prefix Sum & Bounding Step
         // Boxfilter step
         invD = 1.0f /(posR-posL);
-        img(ij,i) = sum * invD;
+        img(j,i) = sum * invD;
 \end{lstlisting}
 
 \subsubsection{Vectorisation}
@@ -115,16 +115,16 @@ union float3{
   __m128 mmvalue;
 };
 \end{lstlisting}
-The vectorization of the individual operations proved straightforward. The operations on the individual colour values could be replaced with a single vector operation. This also reduced the number instructions in the code and the thus the number of branch misspredictions as measured in VTune.
+The vectorization of the individual operations proved straightforward. The operations on the individual colour values could be replaced with a single vector operation. This also reduced the number of instructions in the code and thus the number of branch misspredictions as measured in VTune. Using this approach we could theoretically increase performance by a factor of three (instead of the usual four times factor, because 1/4 of the operations is executed on padding data). In practise we however only observed a small speedup of a few percent. Our explanation for this is that we exchanged instruction level parallelism with vector instruction paralellism. Using the vector instructions we don't have enough independent computations anymore to fill the instruction pipeline.
 
 \subsection{Failed optimisation attempts}
 
 \fixme{Rewrite}
 \subsubsection{Precomputation} 
 
-Benchmarking the program with Intel VTune showed a high number of floating point division operations executed. Since the box filter computes the inverse of values in $[1,\text{image width}-1]$ we precomputed the inverse during compile time. Thus the precomputed values could be looked up by simple memory lookup. 
+Benchmarking the program with Intel VTune showed a high number of floating point division operations executed. Since the box filter computes the inverse of values in the range $[1,\text{image width}-1]$ we precomputed the inverse during compile time. Thus the precomputed values could be looked up by from memory and be used in faster multiplication operations.
 
-Using precomputed values in the range of $[1,100]$ returned the better performance than precomputing all values. Unfortunately the performance attempt didn't bring any performance improvements compared to the method discussed in section \ref{sec:method:write_transposed}.
+Using precomputed values in the range of $[1,100]$ returned the better performance than precomputing all values. Unfortunately the performance attempt didn't bring any overall performance improvements compared to the method discussed in section \ref{sec:method:write_transposed}.
 
 %By precomputing the inverse for all possible values  at compile time and then 
 %
@@ -139,8 +139,7 @@ Firstly it might be that such precomputed values already exist, as these rather 
 
 We tried to store the per pixel color information in three \texttt{unsigned char} variables instead of the same number of \texttt{float} fields. This reduced the precision of intermediate storage but also reduces memory requirements for image storage by 75\%.
  
-Unfortunately it also increased to the number of operations needed for each operation computed per pixel.  
-This introduced additional conversion overhead for each operation: After loading from memory the char needs to be casted to int and from there to float. Once the computation is completed the floats need to be casted again. 
+Unfortunately this also introduced additional conversion overhead for each operation: After loading from memory the char needs to be casted to int and from there to float. Once all computations are completed the floats need to be casted back again. 
 
 We felt that the conversion steps proved to much overhead (5 cycles latency per conversion) to increase performance next to memory and additional code required.
 \comment{
@@ -151,14 +150,11 @@ Apart from changing the precision that would also mean conversion overhead betwe
 
 Unfortunately, one of the most common optimisation approaches does not work for the algorithm in question. In general blocking allows to increase cache locality, especially when the block sizes are calculated in a way such that the working set fits in cache. However that also means that the computation for each image pixel should depend on a fixed number of adjacent pixels, which isn't the case for the edge-aware filter.
 
-We have gathered statistics on the amount of pixels used for the test images, and these were numbers between $30$ and $150$ pixels. That would mean that our block sizes should be around $150$ pixels, which is too much to be a reasonable size. Also this number may increase up to the whole dimension of the image as the filter bound depend on the image data (for example in the case of a monochrome line in the image with a wide filter window). Smaller block sizes also don't make sense as in that case we would need to re-read information if the filter bound goes outside the block which would mean more overhead. 
-
-\fixme{Do we have an explanation for that?}
-We also tried blocking the computation for spatial locality in the output matrix, as the faster versions write the transposed output directly. For some reason this only made the computation run even slower that the non-blocked version.
+We have gathered statistics on the amount of pixels used for the test images, and these were numbers between $30$ and $150$ pixels. That would mean that our block sizes should be around $150$ pixels, which is too much to be a reasonable size. Also this number may increase up to the whole dimension of the image as the filter bound depend on the image data (for example in the case of a monochrome line in the image with a wide filter window). Smaller block sizes also don't make sense as in that case we would need to re-read information if the filter bound goes outside the block which would mean more overhead.
 
 \subsubsection{Instruction interleaving}
 
-We tried to combine the while loops that compute the borders for the filter, so that independent computation would fill the pipeline. This did not give any performance improvement, perhaps because of the fact that the combined loop still had conditional statements in between the addition operations we wanted to pipeline.
+We tried to combine the while loops that compute the borders for the filter. Here the idea was to interleave the two iterations to get more independent computations to fill the instruction pipeline. This did not give any performance improvement, perhaps because the combined loop still had conditional statements in between the independent addition operations.
 
 \subsubsection{Loop unrolling and reordering}
 
@@ -172,10 +168,11 @@ We also tried to tackle this problem by using stream-write intrinsics (direct wr
 
 \fixme{Rewrite}
 
-Most of the versions we implemented work on the interleaved colour arrays, storing colours as $rgbrgb\dots$. We attempted to reshuffle the data to three separate arrays, each containing one colour, which didn't bring any performance improvement. 
+Most of the versions we implemented work on the interleaved colour arrays, storing colours as $rgbrgb\dots$. We attempted to switch from an array of structs to a struct of arrays, each array containing one colour. However, this didn't lead to a smaller working set size and didn't bring any performance improvement. 
 
+\comment{
 This behaviour could be due to the fact that that way we now need to transpose three separate arrays still, one for each colour. We might write them transposed as well, however then we would access 3 different arrays at a large stride, none of which would get reused in any way as by next access these addresses will be already replaced.
-
+}
 %\\
 %\fixme{Write.}
 %\comment{
